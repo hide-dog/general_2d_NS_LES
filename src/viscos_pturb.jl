@@ -122,7 +122,7 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     S22 = dvdy
 
     absS = ( 2 * (S11^2 + S12^2 + S21^2 + S22^2) )^0.5
-    Delta = (1/6volume_av) ^ (1/3) * wallf_Van_Driest(yplus_av)
+    Delta = (volume_av) ^ (1/3) * wallf_Van_Driest(yplus_av)
 
     nu_sgs = (C_s * Delta)^2 * absS
 
@@ -136,11 +136,11 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     e_sgs_y = -rho_av * nu_sgs / Pr_sgs * dTdy + tau_xy*u_av + tau_yy*v_av
 
     # 
-    tau_xx = tau_xx / volume_av
-    tau_xy = tau_xy / volume_av
-    tau_yy = tau_yy / volume_av
-    e_sgs_x = e_sgs_x / volume_av
-    e_sgs_y = e_sgs_y / volume_av
+    tau_xx = tau_xx / volume_av /10
+    tau_xy = tau_xy / volume_av /10
+    tau_yy = tau_yy / volume_av /10
+    e_sgs_x = e_sgs_x / volume_av /10
+    e_sgs_y = e_sgs_y / volume_av /10
 
     return tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y
 end

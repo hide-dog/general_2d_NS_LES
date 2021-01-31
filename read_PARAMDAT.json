@@ -6,7 +6,7 @@
 
 
 "Restart":"result",         
-"restartnum":"000000",     
+"restartnum":"000009",     
 "in_ext":".dat",
 
 
@@ -15,16 +15,16 @@
 
 
 "time_integ":"1",      
-"nt":"1.0e4",          
+"nt":"1.0e5",          
 "dt":"5.0e-7",       
-"every_outnum":"1.0e2",      
+"every_outnum":"1.0e4",      
 "inner_step":"40",       
 "dtau":"1.0e-2",       
 "CFL":"1.0e1",       
 
 
 "init_rho":"1.0e0",     
-"init_u":"120.0",       
+"init_u":"340.0",       
 "init_v":"0.0",       
 "init_p":"1.0e5",      
 "init_T":"300.0",      
@@ -65,7 +65,7 @@
 "bd4_rho":"1.0",
 
 "bd4_con":"6",
-"bd4_u":"120.0",
+"bd4_u":"340.0",
 "bd4_v":"0.0",
 "bd4_p":"1.0e5",   
 "bd4_T":"300.0",

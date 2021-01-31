@@ -9,7 +9,7 @@ function common_allocation(cellxmax, cellymax, nval)
     cellcenter = zeros(cellxmax, cellymax, 2)          # cell center
     
     wally = zeros(cellxmax, cellymax)                  # dis from wall
-    yplus = zeros(cellxmax, cellymax)                  # yplus
+    yplus = ones(cellxmax, cellymax) * 1e5             # yplus
     
 
     Qcon     = zeros(cellxmax, cellymax, nval)         # conserved variables

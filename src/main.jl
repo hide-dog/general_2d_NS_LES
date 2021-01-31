@@ -39,8 +39,7 @@ function main()
     reset_write(fwrite)
 
     # wally
-    wallpoint, nop = set_wallpoint(nodes, bdcon, cellxmax, cellymax)
-    wally = set_wally(wally, cellcenter, wallpoint, nop, cellxmax, cellymax)
+    wally, swith_wall = set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax)
 
     # write number of threads
     print("threads num : ")
@@ -69,8 +68,8 @@ function main()
             lambda = set_lambda(lambda, Qbase, cellxmax, cellymax, mu, specific_heat_ratio, Rd)
             
             # yplus
-            #yplus = cal_yplus(yplus, Qbase, wally, mu, cellxmax, cellymax)
-            yplus = ones(cellxmax, cellymax)*100                  # yplus
+            #yplus = cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax)
+            #yplus = ones(cellxmax, cellymax)*100                  # yplus
             
             # advection_term
             E_adv_hat, F_adv_hat = AUSM_plus(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, 
@@ -79,13 +78,14 @@ function main()
             # viscos_term
             E_vis_hat, F_vis_hat = central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
                                                 vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus)
-            
+            #=
             println(" fff ")
             println(E_adv_hat[120,199,:])
             println(F_adv_hat[120,199,:])
             println(E_vis_hat[120,199,:])
             println(F_vis_hat[120,199,:])
-            
+            =#
+            #println(yplus[:,2])
 
             # RHS
             RHS = setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume)

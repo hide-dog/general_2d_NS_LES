@@ -69,8 +69,10 @@ function check_divrege(Qbase, cellxmax, cellymax, Rd, fwrite)
             T = Qbase[i,j,4]/(Qbase[i,j,1]*Rd)
             if T < 0 || isequal(T, NaN) == true
                 open( fwrite, "a" ) do f
-                    ai = @sprintf("%4.0f", i)
-                    aj = @sprintf("%4.0f", j)
+                    ai  = @sprintf("%4.0f", i)
+                    aj  = @sprintf("%4.0f", j)
+                    rho = @sprintf("%4.0e", Qbase[i,j,1])
+                    p   = @sprintf("%4.0e", Qbase[i,j,4])
 
                     write(f, "\n")
                     write(f, " diverge ")
@@ -79,6 +81,11 @@ function check_divrege(Qbase, cellxmax, cellymax, Rd, fwrite)
                     write(f, "\n")
                     write(f, " j = "*aj)
                     write(f, "\n")
+                    write(f, " rho = "*rho)
+                    write(f, "\n")
+                    write(f, " p = "*p)
+                    write(f, "\n")
+
                 end
                 ite = 1
             end

@@ -32,6 +32,9 @@ function main()
     Qbase, restartnum = set_initQbase(Qbase, cellxmax, cellymax, restart_file, init_rho, init_u, init_v, init_p, init_T,
                                       specific_heat_ratio, out_file_front, out_ext, out_dir, restartnum, Rd, nval)
     
+    # set initial condition for imaginary cell
+    Qbase    = set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, specific_heat_ratio, nval)
+
     # set volume, dx and dy
     volume = set_volume(nodes, cellxmax, cellymax, volume)
     cellcenter = set_cellcenter(cellcenter, nodes, cellxmax, cellymax)
@@ -68,7 +71,7 @@ function main()
             lambda = set_lambda(lambda, Qbase, cellxmax, cellymax, mu, specific_heat_ratio, Rd)
             
             # yplus
-            #yplus = cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax)
+            #yplus = cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecAx, vecAy)
             #yplus = ones(cellxmax, cellymax)*100                  # yplus
             
             # advection_term
@@ -77,7 +80,7 @@ function main()
                         
             # viscos_term
             E_vis_hat, F_vis_hat = central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
-                                                vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus)
+                                                vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall)
             #=
             println(" fff ")
             println(E_adv_hat[120,199,:])
@@ -85,7 +88,11 @@ function main()
             println(E_vis_hat[120,199,:])
             println(F_vis_hat[120,199,:])
             =#
-            #println(yplus[:,2])
+            #=
+            println(yplus[:,2])
+            println(yplus[:,3])
+            throw(UndefVarError(:x))
+            =#
 
             # RHS
             RHS = setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume)
@@ -150,6 +157,11 @@ function main()
                 # set viscosity and thermal Conductivity
                 mu     = set_mu(mu, Qbasem, cellxmax, cellymax, specific_heat_ratio, Rd)
                 lambda = set_lambda(lambda, Qbasem, cellxmax, cellymax, mu, specific_heat_ratio, Rd)
+                
+                yplus = cal_yplus(yplus, Qbasem, wally, swith_wall, mu, cellxmax, cellymax, vecAx, vecAy)
+                #println(yplus[:,2])
+            
+                #throw(UndefVarError(:x))
 
                 # set inner time step by local time stepping
                 dtau   = set_lts(dtau, lambda_facex, lambda_facey, Qbase, cellxmax, cellymax, mu, dx, dy,
@@ -160,8 +172,8 @@ function main()
                                                 vecAx, vecAy, specific_heat_ratio, volume, nval)
 
                 # viscos_term
-                E_vis_hat, F_vis_hat = central_diff(E_vis_hat, F_vis_hat, Qbasem, Qcon, cellxmax, cellymax, mu, lambda,
-                                                vecAx, vecAy, specific_heat_ratio, volume, Rd, nval)
+                E_vis_hat, F_vis_hat = central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
+                                                vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall)
                 
                 # RHS
                 RHS = setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume)
@@ -173,6 +185,10 @@ function main()
                 # lusgs_viscos_term
                 jalphaP, jbetaP = central_diff_jacobian(jalphaP, jbetaP, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
                                                         vecAx, vecAy, specific_heat_ratio, volume, nval)
+
+                #println(RHS[2,:,1])
+                #println(A_adv_hat_m[2,:,1])
+                #println(jalphaP[2,:])
                 
                 # LUSGS
                 ite = 0
@@ -185,7 +201,7 @@ function main()
                             end
                         end
                     end
-                    
+                                        
                     # Reversing the left-hand side by lusgs
                     delta_Q = lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qconn_hat, delta_Q,
                                     A_adv_hat_p,  A_adv_hat_m,  B_adv_hat_p,  B_adv_hat_m,  A_beta_shig,  B_beta_shig,
@@ -202,6 +218,12 @@ function main()
                     if ite % 100 ==0
                         println(" now cal norm2 ")
                         println(norm2)
+                        if isequal(norm2[1], NaN) == true
+                            println("  ")
+                            println(" norm2 = NaN ")
+                            println(" stop cal ")
+                            throw(UndefVarError(:x))
+                        end
                     end
 
                     ite += 1
@@ -222,6 +244,9 @@ function main()
                 # calculate primitive variables
                 Qcon = Qhat_to_Q(Qcon, Qcon_hat, cellxmax, cellymax, volume, nval)
                 Qbasem = conservative_to_base(Qbasem, Qcon, cellxmax, cellymax, specific_heat_ratio)
+
+                # Find out if the results were divergent
+                check_divrege(Qbasem, cellxmax, cellymax, Rd, fwrite)
             end
             # End of the inner iteration
 

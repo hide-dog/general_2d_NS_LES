@@ -166,7 +166,6 @@ function set_lts(dtau, lambda_facex, lambda_facey, Qbase, cellxmax, cellymax, mu
             dtau[i,j] = cfl * volume[i,j] / lmax
         end
     end
-
     return dtau
 end
 

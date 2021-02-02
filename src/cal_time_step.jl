@@ -75,16 +75,16 @@ function one_wave(A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, A_beta_shi
                 if k == 1
                     for m in 1:nval
                         for l in 1:nval                        
-                            A_adv_hat_p[i,j,l,m] = 0.5*(jacob_temp[l,m] + I_temp[l,m])
-                            A_adv_hat_m[i,j,l,m] = 0.5*(jacob_temp[l,m] - I_temp[l,m])
+                            A_adv_hat_p[i,j,l,m] = 0.5*(jacob_temp[l,m] + I[l,m])
+                            A_adv_hat_m[i,j,l,m] = 0.5*(jacob_temp[l,m] - I[l,m])
                         end
                     end
                     A_beta_shig[i,j] = beta * shigma
                 elseif k ==2                    
                     for m in 1:nval
                         for l in 1:nval
-                            B_adv_hat_p[i,j,l,m] = 0.5*(jacob_temp[l,m] + I_temp[l,m])
-                            B_adv_hat_m[i,j,l,m] = 0.5*(jacob_temp[l,m] - I_temp[l,m])
+                            B_adv_hat_p[i,j,l,m] = 0.5*(jacob_temp[l,m] + I[l,m])
+                            B_adv_hat_m[i,j,l,m] = 0.5*(jacob_temp[l,m] - I[l,m])
                         end
                     end
                     B_beta_shig[i,j] = beta * shigma
@@ -172,7 +172,7 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
         for i in 2:cellxmax-1
             D[i,j] = dt/dtau[i,j] + 1.0 + dt*(A_beta_shig[i,j]+2*jalphaP[i,j] + B_beta_shig[i,j]+2*jbetaP[i,j])
         end
-    end    
+    end
     
     # RHS
     for l in 1:nval    
@@ -191,7 +191,7 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
             end
         end
     end             
-
+    
     # upepr sweep
     for l in 1:nval
         for j in 2:cellymax-1

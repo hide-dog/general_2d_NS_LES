@@ -2,7 +2,7 @@
 # calcucation of the viscosity term by central difference
 # ------------------------------------
 function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
-                        vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus)
+                        vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall)
     
     for j in 2:cellymax -1
         for i in 2:cellxmax+1 -1
@@ -46,8 +46,16 @@ function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu,
             betay = u_av*sigma_xy + v_av*sigma_yy + lambda_av * dTdy
             
             yplus_av = 0.5 *(yplus[i-1,j] + yplus[i,j])
-            tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av)
-            #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+
+            if swith_wall[1] == 1 && i == 2
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+            elseif swith_wall[2] == 1 && i == cellxmax
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+            else
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av)
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+            end
+            
             
             E_vis_hat[i,j,1] = 0.0
             E_vis_hat[i,j,2] = ((vecAx[i,j,1]*sigma_xx + vecAx[i,j,2]*sigma_xy) - (vecAx[i,j,1]*tau_xx + vecAx[i,j,2]*tau_xy)) / volume_av
@@ -99,9 +107,16 @@ function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu,
             betay = u_av*sigma_xy + v_av*sigma_yy + lambda_av * dTdy
             
             yplus_av = 0.5 *(yplus[i,j-1] + yplus[i,j])
-            tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av)
-            #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
 
+            if swith_wall[3] == 1 && j == 2
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+            elseif swith_wall[4] == 1 && j == cellymax
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+            else
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av)
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+            end
+            
             F_vis_hat[i,j,1] = 0.0
             F_vis_hat[i,j,2] = ((vecAy[i,j,1]*sigma_xx + vecAy[i,j,2]*sigma_xy) - (vecAy[i,j,1]*tau_xx + vecAy[i,j,2]*tau_xy)) / volume_av
             F_vis_hat[i,j,3] = ((vecAy[i,j,1]*sigma_xy + vecAy[i,j,2]*sigma_yy) - (vecAy[i,j,1]*tau_xy + vecAy[i,j,2]*tau_yy)) / volume_av
@@ -136,11 +151,11 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     e_sgs_y = -rho_av * nu_sgs / Pr_sgs * dTdy + tau_xy*u_av + tau_yy*v_av
 
     # 
-    tau_xx = tau_xx / volume_av /10
-    tau_xy = tau_xy / volume_av /10
-    tau_yy = tau_yy / volume_av /10
-    e_sgs_x = e_sgs_x / volume_av /10
-    e_sgs_y = e_sgs_y / volume_av /10
+    tau_xx = tau_xx / volume_av
+    tau_xy = tau_xy / volume_av
+    tau_yy = tau_yy / volume_av
+    e_sgs_x = e_sgs_x / volume_av
+    e_sgs_y = e_sgs_y / volume_av
 
     return tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y
 end

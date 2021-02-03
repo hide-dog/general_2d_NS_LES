@@ -15,12 +15,15 @@
 
 # -- time step --
 "time_integ":"1",      # 1 = explicit, 2 = lusgs
-"nt":"1.0e5",          # 時間ステップ数
+"nt":"1.0e4",          # 時間ステップ数
 "dt":"5.0e-7",       # 時間刻み幅[s]
-"every_outnum":"1.0e4",      # 出力毎タイムステップ
+"every_outnum":"1.0e2",      # 出力毎タイムステップ
 "inner_step":"40",       # 疑似時間ステップ数
 "dtau":"1.0e-2",       # 疑似時間刻み幅[s] don't use
 "CFL":"1.0e1",       # local time step
+
+# -- scheme --
+"advection":"2",               # 1 = AUSM+, 2 = AUSM+up, 4 = SLAU
 
 # -- 初期値 --
 "init_rho":"1.0e0",     # 初期密度[kg/m^3]
@@ -62,9 +65,9 @@
 "bd3_v":"0.0",
 "bd3_p":"1.0",
 "bd3_T":"300.0",
-"bd4_rho":"1.0",
 # y+ --------------------------------
 "bd4_con":"6",
+"bd4_rho":"1.0",
 "bd4_u":"340.0",
 "bd4_v":"0.0",
 "bd4_p":"1.0e5",   #p=rhoRTより

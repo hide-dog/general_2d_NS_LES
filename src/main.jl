@@ -17,7 +17,7 @@ function main()
     # read grids and parameter
     xmax, ymax, nodes, vecAx, vecAy = read_allgrid()
     out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
-    time_integ, nt, dt, every_outnum, in_nt, dtau, cfl,
+    time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
     init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon = input_para(PARAMDAT)
     
     # number of cells
@@ -43,6 +43,12 @@ function main()
 
     # wally
     wally, swith_wall = set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax)
+
+    # AUSM+up
+    Minf = 0.0
+    if ad_scheme == 2
+        Minf = set_Minf(bdcon, specific_heat_ratio, Rd, nval)
+    end
 
     # write number of threads
     print("threads num : ")
@@ -75,8 +81,8 @@ function main()
             #yplus = ones(cellxmax, cellymax)*100                  # yplus
             
             # advection_term
-            E_adv_hat, F_adv_hat = AUSM_plus(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, 
-                                            vecAx, vecAy, specific_heat_ratio, volume, nval)
+            E_adv_hat, F_adv_hat = AUSM(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx, vecAy, 
+                                        specific_heat_ratio, volume, nval, Minf, ad_scheme)
                         
             # viscos_term
             E_vis_hat, F_vis_hat = central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
@@ -164,15 +170,15 @@ function main()
                 #throw(UndefVarError(:x))
 
                 # set inner time step by local time stepping
-                dtau   = set_lts(dtau, lambda_facex, lambda_facey, Qbase, cellxmax, cellymax, mu, dx, dy,
+                dtau   = set_lts(dtau, lambda_facex, lambda_facey, Qbasem, cellxmax, cellymax, mu, dx, dy,
                                 vecAx, vecAy, volume, specific_heat_ratio, cfl)
                                 
                 #advection_term
-                E_adv_hat, F_adv_hat = AUSM_plus(E_adv_hat, F_adv_hat, Qbasem, Qcon, cellxmax, cellymax, 
-                                                vecAx, vecAy, specific_heat_ratio, volume, nval)
+                E_adv_hat, F_adv_hat = AUSM(E_adv_hat, F_adv_hat, Qbasem, Qcon, cellxmax, cellymax, vecAx, vecAy, 
+                                            specific_heat_ratio, volume, nval, Minf, ad_scheme)
 
                 # viscos_term
-                E_vis_hat, F_vis_hat = central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
+                E_vis_hat, F_vis_hat = central_diff(E_vis_hat, F_vis_hat, Qbasem, Qcon, cellxmax, cellymax, mu, lambda,
                                                 vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall)
                 
                 # RHS

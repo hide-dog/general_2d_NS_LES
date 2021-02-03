@@ -1,7 +1,7 @@
 # ------------------------------------
-# advection term by AUSM+
+# advection term by AUSM
 # ------------------------------------
-function AUSM_plus(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx, vecAy, specific_heat_ratio, volume, nval)
+function AUSM(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx, vecAy, specific_heat_ratio, volume, nval, Minf, ad_scheme)
     g         = specific_heat_ratio
     cell_vecAx = zeros(2)     # vecAx at cell center
     cell_vecAy = zeros(2)     # vecAy at cell center
@@ -9,6 +9,9 @@ function AUSM_plus(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx,
     temp_vecY = zeros(nval)   # vecAx used for the pressure term
     Lpsi = zeros(nval)        
     Rpsi = zeros(nval)
+
+    mdot = 0.0
+    ph = 0.0
     
     for j in 2:cellymax -1
         for i in 2:cellxmax+1 -1
@@ -28,9 +31,14 @@ function AUSM_plus(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx,
             UR = Qcon[i,j,2] / Qcon[i,j,1]*cell_vecAx[1] + Qcon[i,j,3] / Qcon[i,j,1]*cell_vecAx[2]
             pR = Qbase[i,j,4]
             
-            # AUSM+
-            mdot, ph = AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g)
-            #mdot, ph = AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g)
+            # scheme
+            if  ad_scheme == 1
+                mdot, ph = AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g)
+            elseif ad_scheme == 2
+                mdot, ph = AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g)
+            elseif ad_scheme == 4
+                mdot, ph = SLAU_half(rhoL, rhoR, UL, UR, pL, pR, specific_heat_ratio)
+            end
 
             # flux half
             temp_vecX[2] = vecAx[i,j,1]
@@ -74,7 +82,9 @@ function AUSM_plus(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx,
             pR = Qbase[i,j,4]
 
             # AUSM+up
-            mdot, ph = AUSM_plus_half(rhoL, rhoR, VL, VR, pL, pR, g)
+            #mdot, ph = AUSM_plus_half(rhoL, rhoR, VL, VR, pL, pR, g)
+            mdot, ph = AUSM_plusup_half(rhoL, rhoR, VL, VR, pL, pR, Minf, g)
+            #mdot, ph = SLAU_half(rhoL, rhoR, VL, VR, pL, pR, specific_heat_ratio)
             
             # flux half
             temp_vecY[2] = vecAy[i,j,1]
@@ -239,6 +249,52 @@ function AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g)
     return mdot, ph
 end
 
+function set_Minf(bdcon, specific_heat_ratio, Rd, nval)
+    Minf = 0.0
+    check = 0
+    for i in 1:4
+        if Int(bdcon[i][1]) == 0 || Int(bdcon[i][1]) == 5
+            rho = bdcon[i][2]
+            u = bdcon[i][3]
+            v = bdcon[i][4]
+            p = bdcon[i][5]
+
+            a = (specific_heat_ratio * p / rho)^0.5
+            Minf = (u^2+v^2)^0.5 / a
+
+            println(" Minf = " * string(Minf))
+
+            check = 1
+
+        elseif Int(bdcon[i][1]) == 6
+            rho = bdcon[i][2]
+            u = bdcon[i][3]
+            v = bdcon[i][4]
+            T = bdcon[i][nval+2]
+
+            p = (rho*Rd) * T
+
+            a = (specific_heat_ratio * p / rho)^0.5
+            Minf = (u^2+v^2)^0.5 / a
+            
+            println(" Minf = " * string(Minf))
+
+            check = 1
+        end
+    end
+
+    if check == 0
+        println(" Minf error ")
+        println("  ")
+        println(" if you don't use inlet condition, ")
+        println(" don't use AUSM+up ")
+        println("  ")
+        throw(UndefVarError(:x))
+    end
+
+    return Minf
+end
+
 
 function SLAU_half(rhoL, rhoR, UL, UR, pL, pR, specific_heat_ratio)
     # L, R
@@ -256,18 +312,18 @@ function SLAU_half(rhoL, rhoR, UL, UR, pL, pR, specific_heat_ratio)
     barUL = (1-g) * (rhoR*abs(UR) + rhoL*abs(UL))/(rhoL + rhoR) + g*abs(UL)
     barUR = (1-g) * (rhoR*abs(UR) + rhoL*abs(UL))/(rhoL + rhoR) + g*abs(UR)
 
-    hatM = minimum([1, 1/ah *((uR^2+UL^2)/2)^0.5])
+    hatM = minimum([1, 1/ah *((UR^2+UL^2)/2)^0.5])
     chi  = (1-hatM)^2
 
     beta_a = 0
     beta_b = 0
     if abs(ML) >= 1
-        beta_a = 0.5 * (1+sign(-ML)
+        beta_a = 0.5 * (1+sign(-ML))
     else
         beta_a = 0.25 * (2+ML) * (ML-1)^2
     end
     if abs(MR) >= 1
-        beta_b = 0.5 * (1+sign(MR)
+        beta_b = 0.5 * (1+sign(MR))
     else
         beta_b = 0.25 * (2-MR) * (MR+1)^2
     end

@@ -40,7 +40,7 @@ function read_para(dict)
 
     # restart
     restartnum   = dict["restartnum"]
-    Restart_file = dict["Restart"] * restartnum * dict["in_ext"]
+    restart_file = dict["Restart"] * restartnum * dict["in_ext"]
     restartnum   = Int(parse(Float64,restartnum))
     
     # output
@@ -55,6 +55,9 @@ function read_para(dict)
     in_nt        = Int(parse(Float64,dict["inner_step"]))
     dtau         = parse(Float64,dict["dtau"])
     cfl          = parse(Float64,dict["CFL"])
+
+    # scheme
+    ad_scheme = Int(parse(Float64,dict["advection"]))
     
     # Initial values
     init_rho = parse(Float64,dict["init_rho"])
@@ -91,20 +94,20 @@ function read_para(dict)
         k+=1
     end
     
-    return out_file_front, out_ext, restartnum, Restart_file, init_small, norm_ok,
-            time_integ, nt, dt, every_outnum, in_nt, dtau, cfl,
+    return out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
+            time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
             init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon
 end
 
 function input_para(PARAMDAT)
     read_PARAMDAT = make_json(PARAMDAT)
     dict          = read_json(read_PARAMDAT)
-    out_file_front, out_ext, restartnum, Restart_file, init_small, norm_ok,
-    time_integ, nt, dt, every_outnum, in_nt, dtau, cfl,
+    out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
+    time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
     init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon = read_para(dict)
     println("fin reading para")
 
-    return out_file_front, out_ext, restartnum, Restart_file, init_small, norm_ok,
-            time_integ, nt, dt, every_outnum, in_nt, dtau, cfl,
+    return out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
+            time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
             init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon
 end

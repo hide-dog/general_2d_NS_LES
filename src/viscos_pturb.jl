@@ -53,9 +53,8 @@ function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu,
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
             else
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av)
-                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+                #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
             end
-            
             
             E_vis_hat[i,j,1] = 0.0
             E_vis_hat[i,j,2] = ((vecAx[i,j,1]*sigma_xx + vecAx[i,j,2]*sigma_xy) - (vecAx[i,j,1]*tau_xx + vecAx[i,j,2]*tau_xy)) / volume_av
@@ -114,7 +113,7 @@ function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu,
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
             else
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av)
-                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+                #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
             end
             
             F_vis_hat[i,j,1] = 0.0
@@ -127,9 +126,10 @@ function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu,
 end
 
 function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av)
-    C_s = 0.18 
-    C_l = 0.09
+    Cs = 0.18 
+    Cl = 0.09
     Pr_sgs = 0.6
+    k = 0.41
 
     S11 = dudx
     S12 = 0.5*(dudy + dvdx)
@@ -139,23 +139,25 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     absS = ( 2 * (S11^2 + S12^2 + S21^2 + S22^2) )^0.5
     Delta = (volume_av) ^ (1/3) * wallf_Van_Driest(yplus_av)
 
-    nu_sgs = (C_s * Delta)^2 * absS
+    #lsgs = 0.5*((Cs*Delta - k*y) - abs(Cs*Delta - k*y)) + k*y # min([ky, Cs*Delta])
+    #nu_sgs = (lsgs)^2 * absS
+    nu_sgs = (Cs*Delta)^2 * absS
 
     # SGS stress
-    tau_xx = -2 * rho_av * nu_sgs * 2/3 * dudx  +  1/3 * C_l * 2 * rho_av * Delta^2 * absS^2
+    tau_xx = -2 * rho_av * nu_sgs * 2/3 * dudx  +  1/3 * Cl * 2 * rho_av * Delta^2 * absS^2
     tau_xy = - rho_av * nu_sgs * (dvdx + dudy)
-    tau_yy = -2 * rho_av * nu_sgs * 2/3 * dvdy  +  1/3 * C_l * 2 * rho_av * Delta^2 * absS^2
+    tau_yy = -2 * rho_av * nu_sgs * 2/3 * dvdy  +  1/3 * Cl * 2 * rho_av * Delta^2 * absS^2
 
     # SGS energy
     e_sgs_x = -rho_av * nu_sgs / Pr_sgs * dTdx + tau_xx*u_av + tau_xy*v_av
     e_sgs_y = -rho_av * nu_sgs / Pr_sgs * dTdy + tau_xy*u_av + tau_yy*v_av
 
     # 
-    tau_xx = tau_xx / volume_av
-    tau_xy = tau_xy / volume_av
-    tau_yy = tau_yy / volume_av
-    e_sgs_x = e_sgs_x / volume_av
-    e_sgs_y = e_sgs_y / volume_av
+    tau_xx = tau_xx / volume_av   *0.0
+    tau_xy = tau_xy / volume_av   *0.0
+    tau_yy = tau_yy / volume_av   *0.0
+    e_sgs_x = e_sgs_x / volume_av *0.0
+    e_sgs_y = e_sgs_y / volume_av *0.0
 
     return tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y
 end

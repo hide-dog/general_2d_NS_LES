@@ -3,8 +3,6 @@
 # ------------------------------------
 function AUSM(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx, vecAy, specific_heat_ratio, volume, nval, Minf, ad_scheme)
     g         = specific_heat_ratio
-    cell_vecAx = zeros(2)     # vecAx at cell center
-    cell_vecAy = zeros(2)     # vecAy at cell center
     temp_vecX = zeros(nval)   # vecAx used for the pressure term
     temp_vecY = zeros(nval)   # vecAx used for the pressure term
     Lpsi = zeros(nval)        
@@ -13,36 +11,76 @@ function AUSM(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx, vecA
     mdot = 0.0
     ph = 0.0
     
+    tvAxx = 0.0
+    tvAxy = 0.0
+    vAxx = 0.0
+    vAxy = 0.0
+    tvAyx = 0.0
+    tvAyy = 0.0
+    vAyx = 0.0
+    vAyy = 0.0
     for j in 2:cellymax -1
         for i in 2:cellxmax+1 -1
+            volume_av = 0.5*(volume[i-1,j] + volume[i,j])
+
             # i-1 cell
-            cell_vecAx[1] = 0.5*(vecAx[i-1,j,1]+vecAx[i,j,1])
-            cell_vecAx[2] = 0.5*(vecAx[i-1,j,2]+vecAx[i,j,2])
+            # 規格化
+            tvAxx = 0.5*(vecAx[i-1,j,1]+vecAx[i,j,1])
+            tvAxy = 0.5*(vecAx[i-1,j,2]+vecAx[i,j,2])
+            vAxx = tvAxx / (tvAxx^2+tvAxy^2)^0.5
+            vAxy = tvAxy / (tvAxx^2+tvAxy^2)^0.5
             
             rhoL = Qbase[i-1,j,1]
-            UL = Qcon[i-1,j,2] / Qcon[i-1,j,1]*cell_vecAx[1] + Qcon[i-1,j,3] / Qcon[i-1,j,1]*cell_vecAx[2]
+            UL = Qbase[i-1,j,2]*vAxx + Qbase[i-1,j,3]*vAxy
             pL = Qbase[i-1,j,4]
             
             # i cell
-            cell_vecAx[1] = 0.5*(vecAx[i,j,1]+vecAx[i+1,j,1])
-            cell_vecAx[2] = 0.5*(vecAx[i,j,2]+vecAx[i+1,j,2])
+            # 規格化
+            tvAxx = 0.5*(vecAx[i,j,1]+vecAx[i+1,j,1])
+            tvAxy = 0.5*(vecAx[i,j,2]+vecAx[i+1,j,2])
+            vAxx = tvAxx / (tvAxx^2+tvAxy^2)^0.5
+            vAxy = tvAxy / (tvAxx^2+tvAxy^2)^0.5
             
             rhoR = Qbase[i,j,1]
-            UR = Qcon[i,j,2] / Qcon[i,j,1]*cell_vecAx[1] + Qcon[i,j,3] / Qcon[i,j,1]*cell_vecAx[2]
+            UR = Qbase[i,j,2]*vAxx + Qbase[i,j,3]*vAxy
             pR = Qbase[i,j,4]
+            
+            #=
+            if i==100 && j== 200
+                mdot, ph = AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g,i,j)
+                println("AUSM+")
+                println(mdot)
+                println(ph)
+                
+                mdot, ph = AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g,i,j)
+                println("AUSM+up")
+                println(mdot)
+                println(ph)
+                
+                velocity = 0.5 * ((Qbase[i-1,j,2]^2 + Qbase[i-1,j,3]^2)^0.5 + (Qbase[i,j,2]^2 + Qbase[i,j,3]^2)^0.5)
+                mdot, ph = SLAU_half(rhoL, rhoR, UL, UR, pL, pR, velocity, specific_heat_ratio)
+                println("SLAU")
+                println(mdot)
+                println(ph)
+            end
+            =#
+        
+            
             
             # scheme
             if  ad_scheme == 1
-                mdot, ph = AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g)
+                mdot, ph = AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g,i,j)
             elseif ad_scheme == 2
-                mdot, ph = AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g)
+                mdot, ph = AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g, i,j)
             elseif ad_scheme == 4
-                mdot, ph = SLAU_half(rhoL, rhoR, UL, UR, pL, pR, specific_heat_ratio)
+                velocity = (0.5 * (Qbase[i-1,j,2]^2 + Qbase[i-1,j,3]^2 + Qbase[i,j,2]^2 + Qbase[i,j,3]^2))^0.5
+                mdot, ph = SLAU_half(rhoL, rhoR, UL, UR, pL, pR, velocity, specific_heat_ratio)
             end
-
+            
             # flux half
-            temp_vecX[2] = vecAx[i,j,1]
-            temp_vecX[3] = vecAx[i,j,2]
+            sqAx = (vecAx[i,j,1]^2 + vecAx[i,j,2]^2)^0.5
+            temp_vecX[2] = vecAx[i,j,1] / sqAx
+            temp_vecX[3] = vecAx[i,j,2] / sqAx
 
             for l in 1:nval
                 Lpsi[l] = Qcon[i-1,j,l] / Qcon[i-1,j,1]
@@ -53,11 +91,11 @@ function AUSM(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx, vecA
 
             if mdot > 0
                 for l in 1:nval
-                    E_adv_hat[i,j,l] = mdot * Lpsi[l] + ph * temp_vecX[l]
+                    E_adv_hat[i,j,l] = (mdot * Lpsi[l] + ph * temp_vecX[l]) * sqAx
                 end
             else
                 for l in 1:nval
-                    E_adv_hat[i,j,l] = mdot * Rpsi[l] + ph * temp_vecX[l]
+                    E_adv_hat[i,j,l] = (mdot * Rpsi[l] + ph * temp_vecX[l]) * sqAx
                 end
             end            
         end
@@ -65,30 +103,62 @@ function AUSM(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx, vecA
 
     for j in 2:cellymax+1 -1
         for i in 2:cellxmax -1
+            volume_av = 0.5*(volume[i,j-1] + volume[i,j])
+
             # j-1 cell
-            cell_vecAy[1] = 0.5*(vecAy[i,j-1,1]+vecAy[i,j,1])
-            cell_vecAy[2] = 0.5*(vecAy[i,j-1,2]+vecAy[i,j,2])
+            # 規格化
+            tvAyx = 0.5*(vecAy[i,j-1,1]+vecAy[i,j,1])
+            tvAyy = 0.5*(vecAy[i,j-1,2]+vecAy[i,j,2])
+            vAyx = tvAyx / (tvAyx^2+tvAyy^2)^0.5
+            vAyy = tvAyy / (tvAyx^2+tvAyy^2)^0.5
             
             rhoL = Qbase[i,j-1,1]
-            VL = Qbase[i,j-1,2]*cell_vecAy[1] + Qbase[i,j-1,3]*cell_vecAy[2]
+            VL = Qbase[i,j-1,2]*vAyx + Qbase[i,j-1,3]*vAyy
             pL = Qbase[i,j-1,4]
             
             # j cell
-            cell_vecAy[1] = 0.5*(vecAy[i,j,1]+vecAy[i,j+1,1])
-            cell_vecAy[2] = 0.5*(vecAy[i,j,2]+vecAy[i,j+1,2])
+            tvAyx = 0.5*(vecAy[i,j,1]+vecAy[i,j+1,1])
+            tvAyy = 0.5*(vecAy[i,j,2]+vecAy[i,j+1,2])
+            vAyx = tvAyx / (tvAyx^2+tvAyy^2)^0.5
+            vAyy = tvAyy / (tvAyx^2+tvAyy^2)^0.5
             
             rhoR = Qbase[i,j,1]
-            VR = Qbase[i,j,2]*cell_vecAy[1] + Qbase[i,j,3]*cell_vecAy[2]
+            VR = Qbase[i,j,2]*vAyx + Qbase[i,j,3]*vAyy
             pR = Qbase[i,j,4]
 
-            # AUSM+up
-            #mdot, ph = AUSM_plus_half(rhoL, rhoR, VL, VR, pL, pR, g)
-            mdot, ph = AUSM_plusup_half(rhoL, rhoR, VL, VR, pL, pR, Minf, g)
-            #mdot, ph = SLAU_half(rhoL, rhoR, VL, VR, pL, pR, specific_heat_ratio)
+            # scheme
+            if  ad_scheme == 1
+                mdot, ph = AUSM_plus_half(rhoL, rhoR, VL, VR, pL, pR, g,i,j)
+            elseif ad_scheme == 2
+                mdot, ph = AUSM_plusup_half(rhoL, rhoR, VL, VR, pL, pR, Minf, g, i,j)
+            elseif ad_scheme == 4
+                velocity = (0.5 * (Qbase[i,j-1,2]^2 + Qbase[i,j-1,3]^2 + Qbase[i,j,2]^2 + Qbase[i,j,3]^2))^0.5
+                mdot, ph = SLAU_half(rhoL, rhoR, VL, VR, pL, pR, velocity, specific_heat_ratio)
+            end
+            #=
+            if i==170 && j== 2
+                mdot, ph = AUSM_plus_half(rhoL, rhoR, VL,VR, pL, pR, g)
+                println("AUSM+")
+                println(mdot)
+                println(ph)
+                
+                mdot, ph = AUSM_plusup_half(rhoL, rhoR, VL,VR, pL, pR, Minf, g)
+                println("AUSM+up")
+                println(mdot)
+                println(ph)
+                
+                velocity = (0.5 * (Qbase[i,j-1,2]^2 + Qbase[i,j-1,3]^2 + Qbase[i,j,2]^2 + Qbase[i,j,3]^2))^0.5
+                mdot, ph = SLAU_half(rhoL, rhoR, VL, VR, pL, pR, velocity, specific_heat_ratio)
+                println("SLAU")
+                println(mdot)
+                println(ph)
+            end
+            =#
             
             # flux half
-            temp_vecY[2] = vecAy[i,j,1]
-            temp_vecY[3] = vecAy[i,j,2]
+            sqAy = (vecAy[i,j,1]^2 + vecAy[i,j,2]^2)^0.5
+            temp_vecY[2] = vecAy[i,j,1] / sqAy
+            temp_vecY[3] = vecAy[i,j,2] / sqAy
 
             for l in 1:nval
                 Lpsi[l] = Qcon[i,j-1,l] / Qcon[i,j-1,1]
@@ -99,11 +169,11 @@ function AUSM(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx, vecA
             
             if mdot > 0
                 for l in 1:nval
-                    F_adv_hat[i,j,l] = mdot * Lpsi[l] + ph * temp_vecY[l]
+                    F_adv_hat[i,j,l] = (mdot * Lpsi[l] + ph * temp_vecY[l]) * sqAy
                 end
             else
                 for l in 1:nval
-                    F_adv_hat[i,j,l] = mdot * Rpsi[l] + ph * temp_vecY[l]
+                    F_adv_hat[i,j,l] = (mdot * Rpsi[l] + ph * temp_vecY[l]) * sqAy
                 end
             end
         end
@@ -112,7 +182,7 @@ function AUSM(E_adv_hat, F_adv_hat, Qbase, Qcon, cellxmax, cellymax, vecAx, vecA
     return E_adv_hat, F_adv_hat
 end
 
-function AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g)
+function AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g,i,j)
     # param
     beta  = 1/8
     alpha = 3/16
@@ -136,7 +206,7 @@ function AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g)
         M_p4 = 0.5*(ML + abs(ML))
         p_p5 = 0.5*(ML + abs(ML)) / ML
     else
-        M_p4 = 0.5*(ML+1)^2 + beta*(ML^2-1)^2
+        M_p4 = 0.25*(ML+1)^2 + beta*(ML^2-1)^2
         p_p5 = 0.25*(ML+1)^2 * (2-ML) + alpha*ML*(ML^2-1)^2
     end
     
@@ -144,13 +214,19 @@ function AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g)
         M_m4 = 0.5*(MR - abs(MR))
         p_m5 = 0.5*(MR - abs(MR)) / MR
     else
-        M_m4 = -0.5*(MR-1)^2 - beta*(MR^2-1)^2
+        M_m4 = -0.25*(MR-1)^2 - beta*(MR^2-1)^2
         p_m5 = 0.25*(MR-1)^2 * (2+MR) - alpha*MR*(MR^2-1)^2
     end
     
     # Mh = M_p4 + M_m4 + Mp/fa
     Mh = M_p4 + M_m4
-    
+#=
+    if i==100 && j==200
+        println(" MMM_AUSM+ ")
+        println(M_p4)
+        println(M_m4)
+    end
+  =#  
     # mdot half
     mdot = ah * Mh
     if Mh > 0
@@ -165,7 +241,7 @@ function AUSM_plus_half(rhoL, rhoR, UL, UR, pL, pR, g)
     return mdot, ph
 end
 
-function AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g)
+function AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g, i,j)
     # param
     beta  = 1/8
     kp    = 0.25
@@ -184,7 +260,7 @@ function AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g)
     Mo   = (min(1,max( Mbar^2, Minf^2 )))^0.5
     fa   = Mo * (2-Mo)
 
-    alpha = 3/16 * ( -4 + 5*fa )
+    alpha = 3/16 * ( -4 + 5*fa^2 )
 
     ML = UL/ah
     MR = UR/ah
@@ -199,9 +275,7 @@ function AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g)
     else
         Mtp  = 0.25*(ML + 1)^2
         Mtm  = -0.25*(ML - 1)^2
-        #M2m1 = (ML^2 - 1)^2
         M_p4 = Mtp * (1 - 16*beta*Mtm)
-        #M_p4 = (1-ML)* (Mtp + beta*M2m1) + ML*0.5*(ML + abs(ML))
         p_p5 = Mtp * ((2-ML) - 16*alpha*ML*Mtm)
     end
     
@@ -216,24 +290,20 @@ function AUSM_plusup_half(rhoL, rhoR, UL, UR, pL, pR, Minf, g)
         p_m5 = Mtm * ((-2-MR) + 16*alpha*MR*Mtp)
     end
     
-    #=
-    Mtp  = 0.25*(ML + 1)^2
-    Mtm  = -0.25*(ML - 1)^2
-    M2m1 = (ML^2 - 1)^2
-    M_p4 = (1-ML)* (Mtp + beta*M2m1) + ML*0.5*(ML + abs(ML))
-    
-    Mtp  = 0.25*(MR + 1)^2
-    Mtm  = -0.25*(MR - 1)^2
-    M2m1 = (MR^2 - 1)^2
-    M_m4 = (1-MR)* (Mtm - beta*M2m1) + MR*0.5*(MR - abs(MR))
-    =#
-
     # M half
-    Mp = -kp * max( 1 - sigma*Mbar^2, 0) * (pR - pL)/(rhoh*ah^2)
-
-    # Mh = M_p4 + M_m4 + Mp/fa
-    Mh = M_p4 + M_m4
+    Mp = -kp * max( 1 - sigma*Mbar^2, 0.0) * (pR - pL)/(rhoh*ah^2)
     
+    Mh = M_p4 + M_m4 + Mp/fa
+    
+    #=
+    if i==100 && j==200
+        println(" MMM_AUSM+up ")
+        println(M_p4)
+        println(M_m4)
+        println(Mp/fa)
+    end
+    =#
+        
     # mdot half
     mdot = ah * Mh
     if Mh > 0
@@ -296,7 +366,10 @@ function set_Minf(bdcon, specific_heat_ratio, Rd, nval)
 end
 
 
-function SLAU_half(rhoL, rhoR, UL, UR, pL, pR, specific_heat_ratio)
+function SLAU_half(rhoL, rhoR, UL, UR, pL, pR, velocity, specific_heat_ratio)
+    mdot =1.0
+    ph =1.0
+
     # L, R
     aL = (specific_heat_ratio * pL / rhoL)^0.5
     aR = (specific_heat_ratio * pR / rhoR)^0.5
@@ -307,32 +380,34 @@ function SLAU_half(rhoL, rhoR, UL, UR, pL, pR, specific_heat_ratio)
     ML = UL/ah
     MR = UR/ah
 
-    g = - maximum([minimum([MR, 0]), -1]) * minimum([maximum([ML, 0]), 1])
+    temp1 = -max( min( ML, 0.0 ), -1.0)
+    temp2 =  min( max( MR, 0.0 ), 1.0)
+    g = temp1 * temp2
 
-    barUL = (1-g) * (rhoR*abs(UR) + rhoL*abs(UL))/(rhoL + rhoR) + g*abs(UL)
-    barUR = (1-g) * (rhoR*abs(UR) + rhoL*abs(UL))/(rhoL + rhoR) + g*abs(UR)
+    barUL = (1-g) * (rhoL*abs(UL) + rhoR*abs(UR))/(rhoL + rhoR) + g*abs(UL)
+    barUR = (1-g) * (rhoL*abs(UL) + rhoR*abs(UR))/(rhoL + rhoR) + g*abs(UR)
 
-    hatM = minimum([1, 1/ah *((UR^2+UL^2)/2)^0.5])
+    hatM = min(1.0, 1/ah * velocity)
     chi  = (1-hatM)^2
-
+        
     beta_a = 0
     beta_b = 0
-    if abs(ML) >= 1
-        beta_a = 0.5 * (1+sign(-ML))
-    else
-        beta_a = 0.25 * (2+ML) * (ML-1)^2
-    end
     if abs(MR) >= 1
-        beta_b = 0.5 * (1+sign(MR))
+        beta_a = 0.5 * (1+sign(-MR))
     else
-        beta_b = 0.25 * (2-MR) * (MR+1)^2
+        beta_a = 0.25 * (2+MR) * (MR-1)^2
+    end
+    if abs(ML) >= 1
+        beta_b = 0.5 * (1+sign(ML))
+    else
+        beta_b = 0.25 * (2-ML) * (ML+1)^2
     end
     
     # mdot half
-    mdot = 0.5 * (rhoR*(UR+abs(UR)) + rhoL*(UL-abs(UL)) - chi/ah*abs(pR-pL))
+    mdot = 0.5 * (rhoL*(UL+abs(barUL)) + rhoR*(UR-abs(barUR)) - chi/ah*(pR-pL))
     
     # p half
-    ph = 0.5*(pR+pL) + 0.5*(beta_b-beta_a) + (1-chi) * (beta_b+beta_a-1) * 0.5*(pR+pL)
+    ph = 0.5*(pR+pL) + 0.5*(beta_b-beta_a)*(pL-pR) + (1-chi) * (beta_b+beta_a-1) * 0.5*(pR+pL)
 
     # SLAU2
     #ph = 0.5*(pR+pL) + 0.5*(beta_b-beta_a) + ((UR^2+UL^2)/2)^0.5 * (beta_b+beta_a-1) * 0.5*(rhoR+rhoL)*ah

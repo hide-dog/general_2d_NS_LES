@@ -77,7 +77,7 @@ function main()
             lambda = set_lambda(lambda, Qbase, cellxmax, cellymax, mu, specific_heat_ratio, Rd)
             
             # yplus
-            #yplus = cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecAx, vecAy)
+            yplus = cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecAx, vecAy, volume)
             #yplus = ones(cellxmax, cellymax)*100                  # yplus
             
             # advection_term
@@ -94,11 +94,14 @@ function main()
             println(E_vis_hat[120,199,:])
             println(F_vis_hat[120,199,:])
             =#
-            #=
-            println(yplus[:,2])
-            println(yplus[:,3])
-            throw(UndefVarError(:x))
-            =#
+            #println(yplus[:,1])
+            #println(yplus[:,2])
+            #println(yplus[:,3])
+            #println(yplus[:,4])
+            #println(yplus[:,5])
+            #println(wally[:,2])
+            #throw(UndefVarError(:x))
+            
 
             # RHS
             RHS = setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume)
@@ -164,7 +167,7 @@ function main()
                 mu     = set_mu(mu, Qbasem, cellxmax, cellymax, specific_heat_ratio, Rd)
                 lambda = set_lambda(lambda, Qbasem, cellxmax, cellymax, mu, specific_heat_ratio, Rd)
                 
-                yplus = cal_yplus(yplus, Qbasem, wally, swith_wall, mu, cellxmax, cellymax, vecAx, vecAy)
+                yplus = cal_yplus(yplus, Qbasem, wally, swith_wall, mu, cellxmax, cellymax, vecAx, vecAy, volume)
                 #println(yplus[:,2])
             
                 #throw(UndefVarError(:x))

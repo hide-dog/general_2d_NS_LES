@@ -100,57 +100,85 @@ function set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax)
 			wally[i,j] = surface/dis_bottom * 2
 		end
 	end
+
+	# 仮想セルへの代入
+	for i in 2:cellxmax-1
+		wally[i,1] = wally[i,2]
+		wally[i,cellymax] = wally[i,cellymax-1]
+	end
+	for j in 2:cellymax-1
+		wally[1,j] = wally[2,j]
+		wally[cellxmax,j] = wally[cellxmax-1,j]
+	end
+
 	return wally, swith_wall
 end
 
-function cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecAx, vecAy)
+function cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecAx, vecAy, volume)
+	tvAxx = 0.0
+    tvAxy = 0.0
+    Axx = 0.0
+    Axy = 0.0
+    tvAyx = 0.0
+    tvAyy = 0.0
+    Ayx = 0.0
+    Ayy = 0.0
+
 	
 	if swith_wall[1] == 1
-		for j in 2:cellymax-1
-			ite = [2, 3]
+		for j in 1:cellymax
+			ite = [2, 3, 4, 5]
 			for i in ite
-				Axx = 0.5*(vecAx[i-1,j,1] + vecAx[i,j,1])
-				Axy = 0.5*(vecAx[i-1,j,2] + vecAx[i,j,2])
+				tvAxx = 0.5*(vecAx[i-1,j,1]+vecAx[i,j,1])
+				tvAxy = 0.5*(vecAx[i-1,j,2]+vecAx[i,j,2])
+				Axx = tvAxx / (tvAxx^2+tvAxy^2)^0.5
+				Axy = tvAxy / (tvAxx^2+tvAxy^2)^0.5
 				nu = mu[i,j] / Qbase[i,j,1]
 				ubar = abs(Axx*Qbase[i,j,2] + Axy*Qbase[i,j,3])
-				yplus[i,j], utau = cal_wall_val_spalding(ubar, wally[i,j], nu)
+				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
 			end
 		end
 	end
 	if swith_wall[2] == 1
-		for j in 2:cellymax-1
-			ite = [cellxmax-2, cellxmax-1]
+		for j in 1:cellymax
+			ite = [cellxmax-4, cellxmax-3, cellxmax-2, cellxmax-1]
 			for i in ite
-				Axx = 0.5*(vecAx[i-1,j,1] + vecAx[i,j,1])
-				Axy = 0.5*(vecAx[i-1,j,2] + vecAx[i,j,2])
+				tvAxx = 0.5*(vecAx[i,j,1]+vecAx[i+1,j,1])
+				tvAxy = 0.5*(vecAx[i,j,2]+vecAx[i+1,j,2])
+				Axx = tvAxx / (tvAxx^2+tvAxy^2)^0.5
+				Axy = tvAxy / (tvAxx^2+tvAxy^2)^0.5
 				nu = mu[i,j] / Qbase[i,j,1]
 				ubar = abs(Axx*Qbase[i,j,2] + Axy*Qbase[i,j,3])
-				yplus[i,j], utau = cal_wall_val_spalding(ubar, wally[i,j], nu)
+				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
 			end
 		end
 	end
 	if swith_wall[3] == 1
-		for i in 2:cellxmax-1
-			ite = [2, 3]
+		for i in 1:cellxmax
+			ite = [2, 3, 4, 5]
 			for j in ite
-				Ayx = 0.5*(vecAy[i,j-1,1] + vecAx[i,j,1])
-				Ayy = 0.5*(vecAy[i,j-1,2] + vecAx[i,j,2])
+				tvAyx = 0.5*(vecAy[i,j-1,1]+vecAy[i,j,1])
+				tvAyy = 0.5*(vecAy[i,j-1,2]+vecAy[i,j,2])
+				Ayx = tvAyx / (tvAyx^2+tvAyy^2)^0.5
+				Ayy = tvAyy / (tvAyx^2+tvAyy^2)^0.5
 				nu = mu[i,j] / Qbase[i,j,1]
 				ubar = abs(Ayx*Qbase[i,j,2] + Ayy*Qbase[i,j,3])
-				#yplus[i,j], utau = cal_wall_val_spalding(ubar, wally[i,j], nu)
+				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
 				#yplus[i,j] = 30.0
 			end
 		end
 	end
 	if swith_wall[4] == 1
-		for i in 2:cellxmax-1
-			ite = [cellymax-2, cellymax-1]
+		for i in 1:cellxmax
+			ite = [cellymax-4, cellymax-3, cellymax-2, cellymax-1]
 			for j in ite
-				Ayx = 0.5*(vecAy[i,j-1,1] + vecAx[i,j,1])
-				Ayy = 0.5*(vecAy[i,j-1,2] + vecAx[i,j,2])
+				tvAyx = 0.5*(vecAy[i,j,1]+vecAy[i,j+1,1])
+				tvAyy = 0.5*(vecAy[i,j,2]+vecAy[i,j+1,2])
+				Ayx = tvAyx / (tvAyx^2+tvAyy^2)^0.5
+				Ayy = tvAyy / (tvAyx^2+tvAyy^2)^0.5
 				nu = mu[i,j] / Qbase[i,j,1]
 				ubar = abs(Ayx*Qbase[i,j,2] + Ayy*Qbase[i,j,3])
-				yplus[i,j], utau = cal_wall_val_spalding(ubar, wally[i,j], nu)
+				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
 			end
 		end
 	end
@@ -158,87 +186,36 @@ function cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecA
 	return yplus
 end
 
-
 function cal_wall_val_spalding(u,y,nu)
 	# spalding 定数
 	k = 0.4
 	B = 5.5
 
-	# 二分法
-	u_taup = 500
-	u_taum = -10
-	u_tau = 1.0
+	# ニュートン法
+	up = 15.0
 	for i in 1:20
-		old = u_tau
+		old = up
 		
-		# 減速項nuの計算ループ
-		for j in 1:5
+		up = up - spalding(up,u,y,nu,k,B)/spalding_dash(up,u,y,nu,k,B)
 
-			temp_u_tau = u_tau - nu * spalding(u_tau,u,y,nu,k,B)/spalding_dash(u_tau,u,y,nu,k,B)
-
-			if abs(spalding(temp_u_tau,u,y,nu,k,B)) < (1-nu*sigma) * abs(spalding(temp_u_tau,u,y,nu,k,B))
-				u_tau = temp_u_tau
-				break
-			else
-				nu = nu/2
-			end
-		end
-
-		if abs(u_tau-old)/u_tau < 10^(-4)
+		if abs(up-old)/up < 10^(-4)
 			break
 		end
 	end
 
-	yplus = u_tau*y/nu
-	return yplus, u_tau
+	yplus = u*y/nu/up
+	return yplus, up
 end
 
-
-function cal_wall_val_spalding_newton(u,y,nu)
-	# spalding 定数
-	k = 0.4
-	B = 5.5
-
-	# 減速ニュートン法の定数
-	nu = 1
-	sigma = 0.25 # <1
-
-	# 減速ニュートン法
-	u_tau = 1
-	for i in 1:20
-		old = u_tau
-		
-		# 減速項nuの計算ループ
-		for j in 1:5
-
-			temp_u_tau = u_tau - nu * spalding(u_tau,u,y,nu,k,B)/spalding_dash(u_tau,u,y,nu,k,B)
-
-			if abs(spalding(temp_u_tau,u,y,nu,k,B)) < (1-nu*sigma) * abs(spalding(temp_u_tau,u,y,nu,k,B))
-				u_tau = temp_u_tau
-				break
-			else
-				nu = nu/2
-			end
-		end
-
-		if abs(u_tau-old)/u_tau < 10^(-4)
-			break
-		end
-	end
-
-	yplus = u_tau*y/nu
-	return yplus, u_tau
-end
-
-function spalding(u_tau,u,y,nu,k,B)
-	t = k*u/u_tau
-	F = u/u_tau-u_tau*y/nu + exp(-k*B)*(exp(t)-1-t-t^2/2-t^3/6)
+function spalding(up,u,y,nu,k,B)
+	t = k*up
+	F = - 1/up* u*y/nu + up + exp(-k*B)*(exp(t)-1-t-t^2/2-t^3/6)
 	return F
 end
 
-function spalding_dash(u_tau,u,y,nu,k,B)
-	t = k*u/u_tau
-	Fdash = -u/u_tau^2-y/nu + exp(-k*B)*(t/u_tau)*(-exp(t)+1+t+t^2/2)
+function spalding_dash(up,u,y,nu,k,B)
+	t = k*up
+	Fdash = 1/up^2* u*y/nu + 1 + exp(-k*B)*(k*exp(t)-k-k^2*up-k^3*up^2/2)
 	return Fdash
 end
 

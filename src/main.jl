@@ -87,19 +87,25 @@ function main()
             # viscos_term
             E_vis_hat, F_vis_hat = central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
                                                 vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall)
-            #=
-            println(" fff ")
-            println(E_adv_hat[120,199,:])
-            println(F_adv_hat[120,199,:])
-            println(E_vis_hat[120,199,:])
-            println(F_vis_hat[120,199,:])
-            =#
+            
+            #println(" fff ")
+            #println(E_adv_hat[10,10,:])
+            #println(F_adv_hat[10,10,:])
+            #println(E_vis_hat[10,10,:])
+            #println(F_vis_hat[10,10,:])
+            
+
+            #throw(UndefVarError(:x))
+            
             #println(yplus[:,1])
-            #println(yplus[:,2])
-            #println(yplus[:,3])
+            #println(" yplus ")
+            #println(yplus[1000,2])
+            #println(yplus[1000,3])
+            #println(mu[1000,2] / Qbase[1000,2,1])
             #println(yplus[:,4])
             #println(yplus[:,5])
-            #println(wally[:,2])
+            #println(wally[1000,2])
+            #println(wally[1000,3])
             #throw(UndefVarError(:x))
             
 

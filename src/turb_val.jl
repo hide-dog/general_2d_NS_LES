@@ -126,37 +126,9 @@ function cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecA
 
 	
 	if swith_wall[1] == 1
-		for j in 1:cellymax
-			ite = [2, 3, 4, 5]
-			for i in ite
-				tvAxx = 0.5*(vecAx[i-1,j,1]+vecAx[i,j,1])
-				tvAxy = 0.5*(vecAx[i-1,j,2]+vecAx[i,j,2])
-				Axx = tvAxx / (tvAxx^2+tvAxy^2)^0.5
-				Axy = tvAxy / (tvAxx^2+tvAxy^2)^0.5
-				nu = mu[i,j] / Qbase[i,j,1]
-				ubar = abs(Axx*Qbase[i,j,2] + Axy*Qbase[i,j,3])
-				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
-			end
-		end
-	end
-	if swith_wall[2] == 1
-		for j in 1:cellymax
-			ite = [cellxmax-4, cellxmax-3, cellxmax-2, cellxmax-1]
-			for i in ite
-				tvAxx = 0.5*(vecAx[i,j,1]+vecAx[i+1,j,1])
-				tvAxy = 0.5*(vecAx[i,j,2]+vecAx[i+1,j,2])
-				Axx = tvAxx / (tvAxx^2+tvAxy^2)^0.5
-				Axy = tvAxy / (tvAxx^2+tvAxy^2)^0.5
-				nu = mu[i,j] / Qbase[i,j,1]
-				ubar = abs(Axx*Qbase[i,j,2] + Axy*Qbase[i,j,3])
-				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
-			end
-		end
-	end
-	if swith_wall[3] == 1
-		for i in 1:cellxmax
-			ite = [2, 3, 4, 5]
-			for j in ite
+		for j in 2:cellymax-1
+			# 壁に並行な方向の速度を求めるためx-の壁面に対しvecAyを使用
+			for i in 1:cellxmax
 				tvAyx = 0.5*(vecAy[i,j-1,1]+vecAy[i,j,1])
 				tvAyy = 0.5*(vecAy[i,j-1,2]+vecAy[i,j,2])
 				Ayx = tvAyx / (tvAyx^2+tvAyy^2)^0.5
@@ -164,20 +136,52 @@ function cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecA
 				nu = mu[i,j] / Qbase[i,j,1]
 				ubar = abs(Ayx*Qbase[i,j,2] + Ayy*Qbase[i,j,3])
 				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
-				#yplus[i,j] = 30.0
 			end
 		end
 	end
-	if swith_wall[4] == 1
-		for i in 1:cellxmax
-			ite = [cellymax-4, cellymax-3, cellymax-2, cellymax-1]
-			for j in ite
-				tvAyx = 0.5*(vecAy[i,j,1]+vecAy[i,j+1,1])
-				tvAyy = 0.5*(vecAy[i,j,2]+vecAy[i,j+1,2])
+	if swith_wall[2] == 1
+		for j in 2:cellymax-1
+			# 壁に並行な方向の速度を求めるためx+の壁面に対しvecAyを使用
+			for i in 1:cellxmax
+				tvAyx = 0.5*(vecAy[i,j-1,1]+vecAy[i,j,1])
+				tvAyy = 0.5*(vecAy[i,j-1,2]+vecAy[i,j,2])
 				Ayx = tvAyx / (tvAyx^2+tvAyy^2)^0.5
 				Ayy = tvAyy / (tvAyx^2+tvAyy^2)^0.5
 				nu = mu[i,j] / Qbase[i,j,1]
 				ubar = abs(Ayx*Qbase[i,j,2] + Ayy*Qbase[i,j,3])
+				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
+			end
+		end
+	end
+	if swith_wall[3] == 1
+		for i in 2:cellxmax-1
+			for j in 1:cellymax
+			# 壁に並行な方向の速度を求めるためy-の壁面に対しvecAxを使用
+			
+				tvAxx = 0.5*(vecAx[i-1,j,1]+vecAx[i,j,1])
+				tvAxy = 0.5*(vecAx[i-1,j,2]+vecAx[i,j,2])
+				Axx = tvAxx / (tvAxx^2+tvAxy^2)^0.5
+				Axy = tvAxy / (tvAxx^2+tvAxy^2)^0.5
+				nu = mu[i,j] / Qbase[i,j,1]
+				ubar = abs(Axx*Qbase[i,j,2] + Axy*Qbase[i,j,3])
+				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
+
+				if yplus[i,j] > 500
+					break
+				end
+			end
+		end
+	end
+	if swith_wall[4] == 1
+		for j in 1:cellymax
+			# 壁に並行な方向の速度を求めるためy-の壁面に対しvecAxを使用
+			for i in 2:cellxmax-1
+				tvAxx = 0.5*(vecAx[i-1,j,1]+vecAx[i,j,1])
+				tvAxy = 0.5*(vecAx[i-1,j,2]+vecAx[i,j,2])
+				Axx = tvAxx / (tvAxx^2+tvAxy^2)^0.5
+				Axy = tvAxy / (tvAxx^2+tvAxy^2)^0.5
+				nu = mu[i,j] / Qbase[i,j,1]
+				ubar = abs(Axx*Qbase[i,j,2] + Axy*Qbase[i,j,3])
 				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
 			end
 		end
@@ -192,8 +196,8 @@ function cal_wall_val_spalding(u,y,nu)
 	B = 5.5
 
 	# ニュートン法
-	up = 15.0
-	for i in 1:20
+	up = 200.0
+	for i in 1:100
 		old = up
 		
 		up = up - spalding(up,u,y,nu,k,B)/spalding_dash(up,u,y,nu,k,B)

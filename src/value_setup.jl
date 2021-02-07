@@ -305,3 +305,17 @@ function Qhat_to_Q(Qcon, Qcon_hat, cellxmax, cellymax, volume, nval)
     end
     return Qcon
 end
+
+# ------------------------------------
+# cal average convective value
+# ------------------------------------
+function cal_Qave(Qbase, Qbase_ave, cellxmax, cellymax, nval)
+    for l in 1:nval
+        for j in 1:cellymax
+            for i in 1:cellxmax
+                Qbase_ave[i,j,l] += Qbase[i,j,l]
+            end
+        end
+    end
+    return Qbase_ave
+end

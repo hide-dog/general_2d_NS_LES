@@ -28,6 +28,60 @@ function output_result(stepnum, Qbase, cellxmax, cellymax, specific_heat_ratio, 
     println("\nwrite "*fff)
 end
 
+
+# ------------------------------------
+# output results ( + yplus) 
+# ------------------------------------
+function output_result1(stepnum, Qbase, yplus, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval)
+    
+    stepnum = string(stepnum)
+    while length(stepnum) < 6
+        stepnum = "0"*stepnum
+    end
+    
+    fff = out_dir*"/"*out_file_front*stepnum*out_ext
+    open(fff,"w") do f
+        write(f,"result:rho[kg/m^3], u[m/s], v[m/s], p[Pa], T[K], yplus\n")
+        for i in 2:cellxmax-1
+            for j in 2:cellymax-1
+                for l in 1:nval
+                    a = @sprintf("%8.8e", Qbase[i,j,l])
+                    write(f, a*" ")
+                end
+                T = Qbase[i,j,4]/(Qbase[i,j,1]*Rd)
+                a = @sprintf("%8.8e", T)
+                write(f, a* " ")
+                a = @sprintf("%8.8e", yplus[i,j])
+                write(f, a*"\n")
+            end
+        end
+    end
+    println("\nwrite "*fff)
+end
+
+# ------------------------------------
+# output ave results
+# ------------------------------------
+function output_ave(Qbase_ave, cellxmax, cellymax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite)
+
+    fff = out_dir*"/"*out_file_front*"average"*out_ext
+    open(fff,"w") do f
+        write(f,"result:rho[kg/m^3], u[m/s], v[m/s], p[Pa], T[K]\n")
+        for i in 2:cellxmax-1
+            for j in 2:cellymax-1
+                for l in 1:nval
+                    a = @sprintf("%8.8e", Qbase_ave[i,j,l] / loop_ite)
+                    write(f, a*" ")
+                end
+                T = Qbase_ave[i,j,4]/(Qbase_ave[i,j,1]*Rd) / loop_ite
+                a = @sprintf("%8.8e", T)
+                write(f, a*"\n")
+            end
+        end
+    end
+    println("\nwrite "*fff)
+end
+
 function reset_write(fwrite)
     open( fwrite, "w" ) do f 
     end

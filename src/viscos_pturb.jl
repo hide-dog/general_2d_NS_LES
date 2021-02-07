@@ -76,7 +76,7 @@ function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu,
             E_vis_hat[i,j,1] = 0.0
             E_vis_hat[i,j,2] = ((vecAx[i,j,1]*sigma_xx + vecAx[i,j,2]*sigma_xy) - (vecAx[i,j,1]*tau_xx + vecAx[i,j,2]*tau_xy)) / volume_av
             E_vis_hat[i,j,3] = ((vecAx[i,j,1]*sigma_xy + vecAx[i,j,2]*sigma_yy) - (vecAx[i,j,1]*tau_xy + vecAx[i,j,2]*tau_yy)) / volume_av
-            E_vis_hat[i,j,4] = ((vecAx[i,j,1]*betax + vecAx[i,j,2]*betay) + (vecAx[i,j,1]*e_sgs_x + vecAx[i,j,2]*e_sgs_y))   / volume_av
+            E_vis_hat[i,j,4] = ((vecAx[i,j,1]*betax + vecAx[i,j,2]*betay) - (vecAx[i,j,1]*e_sgs_x + vecAx[i,j,2]*e_sgs_y))   / volume_av
         end
     end
     
@@ -132,9 +132,9 @@ function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu,
             end
             
             F_vis_hat[i,j,1] = 0.0
-            F_vis_hat[i,j,2] = ((vecAy[i,j,1]*sigma_xx + vecAy[i,j,2]*sigma_xy) + (vecAy[i,j,1]*tau_xx + vecAy[i,j,2]*tau_xy)) / volume_av
-            F_vis_hat[i,j,3] = ((vecAy[i,j,1]*sigma_xy + vecAy[i,j,2]*sigma_yy) + (vecAy[i,j,1]*tau_xy + vecAy[i,j,2]*tau_yy)) / volume_av
-            F_vis_hat[i,j,4] = ((vecAy[i,j,1]*betax + vecAy[i,j,2]*betay) + (vecAy[i,j,1]*e_sgs_x + vecAy[i,j,2]*e_sgs_y))  / volume_av
+            F_vis_hat[i,j,2] = ((vecAy[i,j,1]*sigma_xx + vecAy[i,j,2]*sigma_xy) - (vecAy[i,j,1]*tau_xx + vecAy[i,j,2]*tau_xy)) / volume_av
+            F_vis_hat[i,j,3] = ((vecAy[i,j,1]*sigma_xy + vecAy[i,j,2]*sigma_yy) - (vecAy[i,j,1]*tau_xy + vecAy[i,j,2]*tau_yy)) / volume_av
+            F_vis_hat[i,j,4] = ((vecAy[i,j,1]*betax + vecAy[i,j,2]*betay) - (vecAy[i,j,1]*e_sgs_x + vecAy[i,j,2]*e_sgs_y))  / volume_av
         end
     end
     return E_vis_hat, F_vis_hat

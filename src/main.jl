@@ -25,7 +25,7 @@ function main()
     cellymax = ymax - 1
     
     # allocation
-    Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, lambda, 
+    Qbase, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, lambda, 
     E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, RHS    = common_allocation(cellxmax, cellymax, nval)
     
     # set initial condition
@@ -121,14 +121,14 @@ function main()
             # calculate primitive variables
             Qcon  = Qhat_to_Q(Qcon, Qcon_hat, cellxmax, cellymax, volume, nval)
             Qbase = conservative_to_base(Qbase, Qcon, cellxmax, cellymax, specific_heat_ratio)
-            Qbase_ave = cal_Qave(Qbase, Qbase_ave, cellxmax, cellymax, nval)
+            #Qbase_ave = cal_Qave(Qbase, Qbase_ave, cellxmax, cellymax, nval)
             
             # output
             if round(evalnum) % every_outnum == 0
                 println("\n")
                 println("nt_______________________________"*string(round(evalnum)))
                 output_result(evalnum, Qbase, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval)
-                output_ave(Qbase_ave, cellxmax, cellymax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite)
+                #output_ave(Qbase_ave, cellxmax, cellymax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite)
             end
             
             # Find out if the results were divergent

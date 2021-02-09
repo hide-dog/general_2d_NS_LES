@@ -4,7 +4,7 @@
 function common_allocation(cellxmax, cellymax, nval)
     # define at cell center
     Qbase  = zeros(cellxmax, cellymax, nval)           # primitive variables
-    Qbase_ave = zeros(cellxmax, cellymax, nval)        # average primitive variables 
+    #Qbase_ave = zeros(cellxmax, cellymax, nval)        # average primitive variables 
     volume = zeros(cellxmax, cellymax)                 # volume
 
     cellcenter = zeros(cellxmax, cellymax, 2)          # cell center
@@ -12,7 +12,6 @@ function common_allocation(cellxmax, cellymax, nval)
     wally = zeros(cellxmax, cellymax)                  # dis from wall
     yplus = ones(cellxmax, cellymax) * 1e5             # yplus
     
-
     Qcon     = zeros(cellxmax, cellymax, nval)         # conserved variables
     Qcon_hat = zeros(cellxmax, cellymax, nval)         # conserved variables in the general coordinate system
 
@@ -31,7 +30,7 @@ function common_allocation(cellxmax, cellymax, nval)
     E_vis_hat = zeros(cellxmax+1,   cellymax, nval)    # flux of viscosity in the x-direction
     F_vis_hat = zeros(  cellxmax, cellymax+1, nval)    # flux of viscosity in the y-direction
 
-    return Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, lambda, 
+    return Qbase, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, lambda, 
             E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, RHS
 end 
 

@@ -250,15 +250,8 @@ function set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, g, nva
                 Qbase[i,cellymax,l] = Qbase[i,cellymax-1,l]
             end
         end
-    elseif Int(bdcon[4][1]) == 6
-        temp1 = Int64(round(cellxmax/4)+1) # 1/4流出
-        temp2 = Int64((temp1-1)*3+1)       # 1/4~3/4流入
-        for i in 1:temp1
-            for l in 1:nval
-                Qbase[i,cellymax,l] = Qbase[i,cellymax-1,l]
-            end
-        end
-        for i in temp1+1:temp2
+    elseif Int(bdcon[4][1]) == 8
+        for i in 1:cellxmax
             for l in 1:nval
                 Qbase[i,cellymax,l] = bdcon[4][l+1]
             end
@@ -266,10 +259,21 @@ function set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, g, nva
             p = (Qbase[i,cellymax,1]*Rd) * T
             Qbase[i,cellymax,4] = p
         end
-        for i in temp2+1:cellxmax
+    elseif Int(bdcon[4][1]) == 9
+        for i in 1:cellxmax
             for l in 1:nval
-                Qbase[i,cellymax,l] = Qbase[i,cellymax-1,l]
+                Qbase[i,cellymax,l] = bdcon[4][l+1]
             end
+
+            Ayx = vecAy[i,cellymax,1] / (vecAy[i,cellymax,1]^2 + vecAy[i,cellymax,2]^2)^0.5
+            Ayy = vecAy[i,cellymax,2] / (vecAy[i,cellymax,1]^2 + vecAy[i,cellymax,2]^2)^0.5
+            
+            #=
+            Un = Qbase[i,cellymax-1,2]*Ayx + Qbase[i,cellymax-1,2]*Ayy
+            if Un < 0
+
+            end
+            =#
         end
     else
         println("------------------------")
@@ -292,6 +296,7 @@ function check_bd(bdcon)
         elseif Int(bdcon[l][1]) == 5
         elseif Int(bdcon[l][1]) == 6
         elseif Int(bdcon[l][1]) == 7
+        elseif Int(bdcon[l][1]) == 8
         else
             println("\n check boundary condition ! \n")
             throw(UndefVarError(:x))

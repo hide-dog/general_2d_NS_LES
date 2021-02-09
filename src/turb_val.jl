@@ -2,10 +2,24 @@ function set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax)
 	# serch wall
 	swith_wall = zeros(4)   # x-, x+, y-, y+を検索する
 							# 1:壁
+	ite = 0
 	for i in 1:4
-		if Int(bdcon[i][1]) == 2 || Int(bdcon[i][1]) == 7
+		if Int(bdcon[i][1]) == 2
 			swith_wall[i] = 1
+			ite = 1
+		elseif Int(bdcon[i][1]) == 3
+			swith_wall[i] = 1
+			ite = 1
+		elseif Int(bdcon[i][1]) == 7
+			swith_wall[i] = 1
+			ite = 1
 		end
+	end
+
+	if ite == 0
+		println("\n check wall boundary condition ! \n")
+		println("\n error at turbulence \n")
+		throw(UndefVarError(:x))
 	end
 
 	# cal number of ponits

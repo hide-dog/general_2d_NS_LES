@@ -1,12 +1,12 @@
 # -- parameter --
 {
 # -- file name --
-"out_file_front":"result", # 出力ファイル前半分
+"out_file_front":"haya", # 出力ファイル前半分
 "out_ext":".dat",         # 拡張子
 
 # -- restart --
-"Restart":"result",         # 前半のファイル名
-"restartnum":"000009",     # 後半のファイル名（result/[Restart+restartnum+in_ext]で検索）
+"Restart":"haya",         # 前半のファイル名
+"restartnum":"030000",     # 後半のファイル名（result/[Restart+restartnum+in_ext]で検索）
 "in_ext":".dat",
 
 # -- output --
@@ -17,13 +17,13 @@
 "time_integ":"1",      # 1 = explicit, 2 = lusgs
 "nt":"1.0e4",          # 時間ステップ数
 "dt":"5.0e-7",       # 時間刻み幅[s]
-"every_outnum":"1.0e2",      # 出力毎タイムステップ
-"inner_step":"40",       # 疑似時間ステップ数
+"every_outnum":"1.0e3",      # 出力毎タイムステップ
+"inner_step":"20",       # 疑似時間ステップ数
 "dtau":"1.0e-2",       # 疑似時間刻み幅[s] don't use
-"CFL":"1.0e1",       # local time step
+"CFL":"1.0e0",       # local time step
 
 # -- scheme --
-"advection":"2",               # 1 = AUSM+, 2 = AUSM+up, 4 = SLAU
+"advection":"2",               # 1 = AUSM+, (2 = AUSM+up, 4 = SLAU)
 
 # -- 初期値 --
 "init_rho":"1.0e0",     # 初期密度[kg/m^3]

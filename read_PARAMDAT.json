@@ -1,12 +1,12 @@
 
 {
 
-"out_file_front":"result", 
+"out_file_front":"haya", 
 "out_ext":".dat",         
 
 
-"Restart":"result",         
-"restartnum":"000009",     
+"Restart":"haya",         
+"restartnum":"030000",     
 "in_ext":".dat",
 
 
@@ -15,12 +15,15 @@
 
 
 "time_integ":"1",      
-"nt":"1.0e5",          
+"nt":"1.0e4",          
 "dt":"5.0e-7",       
-"every_outnum":"1.0e4",      
-"inner_step":"40",       
+"every_outnum":"1.0e3",      
+"inner_step":"20",       
 "dtau":"1.0e-2",       
-"CFL":"1.0e1",       
+"CFL":"1.0e0",       
+
+
+"advection":"2",               
 
 
 "init_rho":"1.0e0",     
@@ -62,9 +65,9 @@
 "bd3_v":"0.0",
 "bd3_p":"1.0",
 "bd3_T":"300.0",
-"bd4_rho":"1.0",
 
 "bd4_con":"6",
+"bd4_rho":"1.0",
 "bd4_u":"340.0",
 "bd4_v":"0.0",
 "bd4_p":"1.0e5",   

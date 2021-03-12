@@ -1,28 +1,35 @@
 # ------------------------------------
 # calcucation of the viscosity term by central difference
 # ------------------------------------
-function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
-                        vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall)
+function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR, 
+                    QconU, QconD, QconL, QconR, cellxmax, cellymax, mu, lambda,
+                    vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall, icell)
     
-    for j in 2:cellymax -1
-        for i in 2:cellxmax+1 -1
-            rho_av = 0.5*(Qbase[i,j,1] + Qbase[i-1,j,1]) 
-            u_av   = 0.5*(Qbase[i,j,2] + Qbase[i-1,j,2])
-            v_av   = 0.5*(Qbase[i,j,3] + Qbase[i-1,j,3])
+    for j in 1+icell:cellymax -icell
+        for i in 1+icell:cellxmax+1 -icell
+            rho_av = 0.5*(QbaseR[i,j,1] + QbaseL[i,j,1]) 
+            u_av   = 0.5*(QbaseR[i,j,2] + QbaseL[i,j,2])
+            v_av   = 0.5*(QbaseR[i,j,3] + QbaseL[i,j,3])
             
             mu_av     = 0.5*(mu[i-1,j] + mu[i,j]) 
             lambda_av = (0.5*(1/lambda[i-1,j] + 1/lambda[i,j]))^(-1)
 
             volume_av = 0.5*(volume[i,j] + volume[i-1,j])
     
-            dudxi = Qbase[i,j,2] - Qbase[i-1,j,2]
-            dvdxi = Qbase[i,j,3] - Qbase[i-1,j,3]
-            dTdxi = Qbase[i,j,4]/(Qbase[i,j,1]*Rd) - Qbase[i-1,j,4]/(Qbase[i-1,j,1]*Rd)
+            dudxi = QbaseR[i,j,2] - QbaseL[i,j,2]
+            dvdxi = QbaseR[i,j,3] - QbaseL[i,j,3]
+            dTdxi = QbaseR[i,j,4]/(QbaseR[i,j,1]*Rd) - QbaseL[i,j,4]/(QbaseL[i,j,1]*Rd)
     
-            dudeta = 0.25 * (Qbase[i,j+1,2] - Qbase[i,j-1,2] + Qbase[i-1,j+1,2] - Qbase[i-1,j-1,2])
-            dvdeta = 0.25 * (Qbase[i,j+1,3] - Qbase[i,j-1,3] + Qbase[i-1,j+1,3] - Qbase[i-1,j-1,3])
-            dTdeta = 0.25 * (Qbase[i,j+1,4]/(Qbase[i,j+1,1]*Rd) - Qbase[i,j-1,4]/(Qbase[i,j-1,1]*Rd) +
-                            Qbase[i-1,j+1,4]/(Qbase[i-1,j+1,1]*Rd) -  Qbase[i-1,j-1,4]/(Qbase[i-1,j-1,1]*Rd))           
+            dudeta = 0.25 * (QbaseR[i,  j+1,2] - QbaseL[i,  j+1,2] + QbaseR[i,  j,2] - QbaseL[i,  j,2]
+                           + QbaseR[i-1,j+1,2] - QbaseL[i-1,j+1,2] + QbaseR[i-1,j,2] - QbaseL[i-1,j,2])
+            dvdeta = 0.25 * (QbaseR[i,  j+1,3] - QbaseL[i,  j+1,3] + QbaseR[i,  j,3] - QbaseL[i,  j,3]
+                           + QbaseR[i-1,j+1,3] - QbaseL[i-1,j+1,3] + QbaseR[i-1,j,3] - QbaseL[i-1,j,3])
+            
+            dT1 = QbaseR[i,j+1,4]/(QbaseR[i,j+1,1]*Rd) - QbaseL[i,j+1,4]/(QbaseL[i,j+1,1]*Rd)
+            dT2 = QbaseR[i,j,4]/(QbaseR[i,j,1]*Rd) - QbaseL[i,j,4]/(QbaseL[i,j,1]*Rd)
+            dT3 = QbaseR[i-1,j+1,4]/(QbaseR[i-1,j+1,1]*Rd) - QbaseL[i-1,j+1,4]/(QbaseL[i-1,j+1,1]*Rd)
+            dT4 = QbaseR[i-1,j,4]/(QbaseR[i-1,j,1]*Rd) - QbaseL[i-1,j,4]/(QbaseL[i-1,j,1]*Rd)
+            dTdeta = 0.25 * (dT1 + dT2 + dT3 + dT4)
 
             vecAy_xav    = 0.25*( vecAy[i,j,1] + vecAy[i,j+1,1] + vecAy[i-1,j,1] + vecAy[i-1,j+1,1] )
             vecAy_yav    = 0.25*( vecAy[i,j,2] + vecAy[i,j+1,2] + vecAy[i-1,j,2] + vecAy[i-1,j+1,2] )
@@ -45,7 +52,6 @@ function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu,
             betay = u_av*sigma_xy + v_av*sigma_yy + lambda_av * dTdy
             
             yplus_av = 0.5 *(yplus[i-1,j] + yplus[i,j])
-
             
             if swith_wall[1] == 1 && i == 2
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
@@ -105,25 +111,31 @@ function central_diff(E_vis_hat, F_vis_hat, Qbase, Qcon, cellxmax, cellymax, mu,
         end
     end
     
-    for j in 2:cellymax+1 -1
-        for i in 2:cellxmax -1
-            rho_av = 0.5*(Qbase[i,j,1] + Qbase[i,j-1,1]) 
-            u_av = 0.5*(Qbase[i,j,2] + Qbase[i,j-1,2])
-            v_av = 0.5*(Qbase[i,j,3] + Qbase[i,j-1,3])
+    for j in 1+icell:cellymax+1 -icell
+        for i in 1+icell:cellxmax -icell
+            rho_av = 0.5*(QbaseU[i,j,1] + QbaseD[i,j,1]) 
+            u_av   = 0.5*(QbaseU[i,j,2] + QbaseD[i,j,2])
+            v_av   = 0.5*(QbaseU[i,j,3] + QbaseD[i,j,3])
 
             mu_av     = 0.5*(mu[i,j-1] + mu[i,j])
             lambda_av = (0.5*(1/lambda[i,j-1] + 1/lambda[i,j]))^(-1)
 
             volume_av = 0.5*(volume[i,j] + volume[i,j-1])
     
-            dudxi = 0.25 * (Qbase[i+1,j,2] - Qbase[i-1,j,2] + Qbase[i+1,j-1,2] - Qbase[i-1,j-1,2])
-            dvdxi = 0.25 * (Qbase[i+1,j,3] - Qbase[i-1,j,3] + Qbase[i+1,j-1,3] - Qbase[i-1,j-1,3])
-            dTdxi = 0.25 * (Qbase[i+1,j,4]/(Qbase[i+1,j,1]*Rd) - Qbase[i-1,j,4]/(Qbase[i-1,j,1]*Rd) +
-                            Qbase[i+1,j-1,4]/(Qbase[i+1,j-1,1]*Rd) - Qbase[i-1,j-1,4]/(Qbase[i-1,j-1,1]*Rd))
+            dudxi = 0.25 * (QbaseU[i+1,j,2]   - QbaseD[i+1,j,2]   + QbaseU[i,j,2]   - QbaseD[i,j,2]
+                          + QbaseU[i+1,j-1,2] - QbaseD[i+1,j-1,2] + QbaseU[i,j-1,2] - QbaseD[i,j-1,2])
+            dvdxi = 0.25 * (QbaseU[i+1,j,3]   - QbaseD[i+1,j,3]   + QbaseU[i,j,3]   - QbaseD[i,j,3]
+                          + QbaseU[i+1,j-1,3] - QbaseD[i+1,j-1,3] + QbaseU[i,j-1,3] - QbaseD[i,j-1,3])
+            
+            dT1 = QbaseU[i+1,j,4]/(QbaseU[i+1,j,1]*Rd) - QbaseD[i+1,j,4]/(QbaseD[i+1,j,1]*Rd)
+            dT2 = QbaseU[i,j,4]/(QbaseU[i,j,1]*Rd) - QbaseD[i,j,4]/(QbaseD[i,j,1]*Rd)
+            dT3 = QbaseU[i+1,j-1,4]/(QbaseU[i+1,j-1,1]*Rd) - QbaseD[i+1,j-1,4]/(QbaseD[i+1,j-1,1]*Rd)
+            dT4 = QbaseU[i,j-1,4]/(QbaseU[i,j-1,1]*Rd) - QbaseD[i,j-1,4]/(QbaseD[i,j-1,1]*Rd)
+            dTdxi = 0.25 * (dT1 + dT2 + dT3 + dT4)
 
-            dudeta = Qbase[i,j,2] - Qbase[i,j-1,2]
-            dvdeta = Qbase[i,j,3] - Qbase[i,j-1,3]
-            dTdeta = (Qbase[i,j,4]/(Qbase[i,j,1]*Rd) - Qbase[i,j-1,4]/(Qbase[i,j-1,1]*Rd))
+            dudeta = QbaseU[i,j,2] - QbaseD[i,j,2]
+            dvdeta = QbaseU[i,j,3] - QbaseD[i,j,3]
+            dTdeta = (QbaseU[i,j,4]/(QbaseU[i,j,1]*Rd) - QbaseD[i,j,4]/(QbaseD[i,j,1]*Rd))
         
             vecAx_xav    = 0.25*( vecAx[i,j,1] + vecAx[i+1,j,1] + vecAx[i,j-1,1] + vecAx[i+1,j-1,1] )
             vecAx_yav    = 0.25*( vecAx[i,j,2] + vecAx[i+1,j,2] + vecAx[i,j-1,2] + vecAx[i+1,j-1,2] )
@@ -233,11 +245,11 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     e_sgs_y = -rho_av * nu_sgs / Pr_sgs * dTdy + tau_xy*u_av + tau_yy*v_av
 
     # 
-    tau_xx = tau_xx / volume_av   *5.0e2
-    tau_xy = tau_xy / volume_av   *5.0e2
-    tau_yy = tau_yy / volume_av   *5.0e2
-    e_sgs_x = e_sgs_x / volume_av *5.0e2
-    e_sgs_y = e_sgs_y / volume_av *5.0e2
+    tau_xx = tau_xx / volume_av   *1.0e0
+    tau_xy = tau_xy / volume_av   *1.0e0
+    tau_yy = tau_yy / volume_av   *1.0e0
+    e_sgs_x = e_sgs_x / volume_av *1.0e0
+    e_sgs_y = e_sgs_y / volume_av *1.0e0
     
     #=
     if i == 51 && j ==3

@@ -20,15 +20,15 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
             dvdxi = QbaseR[i,j,3] - QbaseL[i,j,3]
             dTdxi = QbaseR[i,j,4]/(QbaseR[i,j,1]*Rd) - QbaseL[i,j,4]/(QbaseL[i,j,1]*Rd)
     
-            dudeta = 0.25 * (QbaseR[i,  j+1,2] - QbaseL[i,  j+1,2] + QbaseR[i,  j,2] - QbaseL[i,  j,2]
-                           + QbaseR[i-1,j+1,2] - QbaseL[i-1,j+1,2] + QbaseR[i-1,j,2] - QbaseL[i-1,j,2])
-            dvdeta = 0.25 * (QbaseR[i,  j+1,3] - QbaseL[i,  j+1,3] + QbaseR[i,  j,3] - QbaseL[i,  j,3]
-                           + QbaseR[i-1,j+1,3] - QbaseL[i-1,j+1,3] + QbaseR[i-1,j,3] - QbaseL[i-1,j,3])
+            dudeta = 0.25 * (QbaseU[i,  j+1,2] - QbaseD[i,  j+1,2] + QbaseU[i,  j,2] - QbaseD[i,  j,2]
+                           + QbaseU[i-1,j+1,2] - QbaseD[i-1,j+1,2] + QbaseU[i-1,j,2] - QbaseD[i-1,j,2])
+            dvdeta = 0.25 * (QbaseU[i,  j+1,3] - QbaseD[i,  j+1,3] + QbaseU[i,  j,3] - QbaseD[i,  j,3]
+                           + QbaseU[i-1,j+1,3] - QbaseD[i-1,j+1,3] + QbaseU[i-1,j,3] - QbaseD[i-1,j,3])
             
-            dT1 = QbaseR[i,j+1,4]/(QbaseR[i,j+1,1]*Rd) - QbaseL[i,j+1,4]/(QbaseL[i,j+1,1]*Rd)
-            dT2 = QbaseR[i,j,4]/(QbaseR[i,j,1]*Rd) - QbaseL[i,j,4]/(QbaseL[i,j,1]*Rd)
-            dT3 = QbaseR[i-1,j+1,4]/(QbaseR[i-1,j+1,1]*Rd) - QbaseL[i-1,j+1,4]/(QbaseL[i-1,j+1,1]*Rd)
-            dT4 = QbaseR[i-1,j,4]/(QbaseR[i-1,j,1]*Rd) - QbaseL[i-1,j,4]/(QbaseL[i-1,j,1]*Rd)
+            dT1 = QbaseU[i,j+1,4]/(QbaseU[i,j+1,1]*Rd) - QbaseD[i,j+1,4]/(QbaseD[i,j+1,1]*Rd)
+            dT2 = QbaseU[i,j,4]/(QbaseU[i,j,1]*Rd) - QbaseD[i,j,4]/(QbaseD[i,j,1]*Rd)
+            dT3 = QbaseU[i-1,j+1,4]/(QbaseU[i-1,j+1,1]*Rd) - QbaseD[i-1,j+1,4]/(QbaseD[i-1,j+1,1]*Rd)
+            dT4 = QbaseU[i-1,j,4]/(QbaseU[i-1,j,1]*Rd) - QbaseD[i-1,j,4]/(QbaseD[i-1,j,1]*Rd)
             dTdeta = 0.25 * (dT1 + dT2 + dT3 + dT4)
 
             vecAy_xav    = 0.25*( vecAy[i,j,1] + vecAy[i,j+1,1] + vecAy[i-1,j,1] + vecAy[i-1,j+1,1] )
@@ -122,15 +122,15 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
 
             volume_av = 0.5*(volume[i,j] + volume[i,j-1])
     
-            dudxi = 0.25 * (QbaseU[i+1,j,2]   - QbaseD[i+1,j,2]   + QbaseU[i,j,2]   - QbaseD[i,j,2]
-                          + QbaseU[i+1,j-1,2] - QbaseD[i+1,j-1,2] + QbaseU[i,j-1,2] - QbaseD[i,j-1,2])
-            dvdxi = 0.25 * (QbaseU[i+1,j,3]   - QbaseD[i+1,j,3]   + QbaseU[i,j,3]   - QbaseD[i,j,3]
-                          + QbaseU[i+1,j-1,3] - QbaseD[i+1,j-1,3] + QbaseU[i,j-1,3] - QbaseD[i,j-1,3])
+            dudxi = 0.25 * (QbaseR[i+1,j,2]   - QbaseL[i+1,j,2]   + QbaseR[i,j,2]   - QbaseL[i,j,2]
+                          + QbaseR[i+1,j-1,2] - QbaseL[i+1,j-1,2] + QbaseR[i,j-1,2] - QbaseL[i,j-1,2])
+            dvdxi = 0.25 * (QbaseR[i+1,j,3]   - QbaseL[i+1,j,3]   + QbaseR[i,j,3]   - QbaseL[i,j,3]
+                          + QbaseR[i+1,j-1,3] - QbaseL[i+1,j-1,3] + QbaseR[i,j-1,3] - QbaseL[i,j-1,3])
             
-            dT1 = QbaseU[i+1,j,4]/(QbaseU[i+1,j,1]*Rd) - QbaseD[i+1,j,4]/(QbaseD[i+1,j,1]*Rd)
-            dT2 = QbaseU[i,j,4]/(QbaseU[i,j,1]*Rd) - QbaseD[i,j,4]/(QbaseD[i,j,1]*Rd)
-            dT3 = QbaseU[i+1,j-1,4]/(QbaseU[i+1,j-1,1]*Rd) - QbaseD[i+1,j-1,4]/(QbaseD[i+1,j-1,1]*Rd)
-            dT4 = QbaseU[i,j-1,4]/(QbaseU[i,j-1,1]*Rd) - QbaseD[i,j-1,4]/(QbaseD[i,j-1,1]*Rd)
+            dT1 = QbaseR[i+1,j,4]/(QbaseR[i+1,j,1]*Rd) - QbaseL[i+1,j,4]/(QbaseL[i+1,j,1]*Rd)
+            dT2 = QbaseR[i,j,4]/(QbaseR[i,j,1]*Rd) - QbaseL[i,j,4]/(QbaseL[i,j,1]*Rd)
+            dT3 = QbaseR[i+1,j-1,4]/(QbaseR[i+1,j-1,1]*Rd) - QbaseL[i+1,j-1,4]/(QbaseL[i+1,j-1,1]*Rd)
+            dT4 = QbaseR[i,j-1,4]/(QbaseR[i,j-1,1]*Rd) - QbaseL[i,j-1,4]/(QbaseL[i,j-1,1]*Rd)
             dTdxi = 0.25 * (dT1 + dT2 + dT3 + dT4)
 
             dudeta = QbaseU[i,j,2] - QbaseD[i,j,2]

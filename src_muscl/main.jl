@@ -81,7 +81,7 @@ function main()
             QbaseU, QbaseD, QbaseL, QbaseR, 
             QconU, QconD, QconL, QconR = muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, 
                                                 QconU, QconD, QconL, QconR, cellxmax, cellymax, vecAx, vecAy,
-                                                nval, icell, specific_heat_ratio)
+                                                nval, icell, specific_heat_ratio, volume, nodes)
             
             # set viscosity and thermal Conductivity
             mu     = set_mu(mu, Qbase, cellxmax, cellymax, specific_heat_ratio, Rd)

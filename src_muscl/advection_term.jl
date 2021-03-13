@@ -134,7 +134,7 @@ function AUSM(E_adv_hat, F_adv_hat, QbaseU, QbaseD, QbaseL, QbaseR, QconU, QconD
                 mdot, ph = AUSM_plusup_half(rhoD, rhoU, VD, VU, pD, pU, Minf, g, i,j)
             elseif ad_scheme == 4
                 velocity = (0.5 * (QbaseD[i,j,2]^2 + QbaseD[i,j,3]^2 + QbaseU[i,j,2]^2 + QbaseU[i,j,3]^2))^0.5
-                mdot, ph = SLAU_half(rhoD, rhoU, VD, VU, pL, pU, velocity, specific_heat_ratio)
+                mdot, ph = SLAU_half(rhoD, rhoU, VD, VU, pD, pU, velocity, specific_heat_ratio)
             end
 
             # flux half

@@ -27,6 +27,8 @@ function common_allocation(cellxmax, cellymax, nval)
 
     mu     = zeros(cellxmax, cellymax)                 # viscosity
     lambda = zeros(cellxmax, cellymax)                 # thermal Conductivity
+    mut    = zeros(cellxmax, cellymax)                 # turb viscosity
+    mut_bd = zeros(cellxmax+1, cellymax+1, 2)              # turb viscosity on bd
 
     RHS = zeros(cellxmax, cellymax, nval)              # right hand side
     
@@ -40,7 +42,7 @@ function common_allocation(cellxmax, cellymax, nval)
     E_vis_hat = zeros(cellxmax+1,   cellymax, nval)    # flux of viscosity in the x-direction
     F_vis_hat = zeros(  cellxmax, cellymax+1, nval)    # flux of viscosity in the y-direction
 
-    return Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, lambda, 
+    return Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, mut, mut_bd, lambda, 
             E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, RHS, QbaseU, QbaseD, QbaseL, QbaseR,
             QconU, QconD, QconL, QconR
             
@@ -78,6 +80,7 @@ function allocation_implicit(cellxmax, cellymax, nval)
     UdQ = zeros(cellxmax, cellymax, nval)               # upper of LHS
 
     RHS_temp = zeros(cellxmax, cellymax, nval)          # temporary RHS
+    res = zeros(cellxmax, cellymax, nval)               # residual
 
     # define at cell boundaries
     lambda_facex = zeros(cellxmax+1, cellymax)          # lambda for computational time steps
@@ -92,6 +95,6 @@ function allocation_implicit(cellxmax, cellymax, nval)
 
     return Qbasen, Qconn, Qconn_hat, Qbasem, dtau, lambda_facex, lambda_facey,
             A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, A_beta_shig, B_beta_shig,
-            jalphaP, jbetaP, delta_Q, delta_Q_temp, D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp,
+            jalphaP, jbetaP, delta_Q, delta_Q_temp, D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, res,
             norm2, I
 end

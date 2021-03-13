@@ -2,7 +2,7 @@
 # calcucation of the viscosity term by central difference
 # ------------------------------------
 function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR, 
-                    QconU, QconD, QconL, QconR, cellxmax, cellymax, mu, lambda,
+                    QconU, QconD, QconL, QconR, cellxmax, cellymax, mu, mut, mut_bd, lambda,
                     vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall, icell)
     
     for j in 1+icell:cellymax -icell
@@ -54,11 +54,13 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
             yplus_av = 0.5 *(yplus[i-1,j] + yplus[i,j])
             
             if swith_wall[1] == 1 && i == 2
-                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             elseif swith_wall[2] == 1 && i == cellxmax
-                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             else
-                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,i,j)
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] =
+                Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av, i, j)
+                
                 #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
 
             #=    
@@ -160,11 +162,11 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
             yplus_av = 0.5 *(yplus[i,j-1] + yplus[i,j])
 
             if swith_wall[3] == 1 && j == 2
-                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             elseif swith_wall[4] == 1 && j == cellymax
-                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             else
-                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,i,j)
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,i,j)
                 #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
             end
             
@@ -172,6 +174,12 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
             F_vis_hat[i,j,2] = ((vecAy[i,j,1]*sigma_xx + vecAy[i,j,2]*sigma_xy) - (vecAy[i,j,1]*tau_xx + vecAy[i,j,2]*tau_xy)) / volume_av
             F_vis_hat[i,j,3] = ((vecAy[i,j,1]*sigma_xy + vecAy[i,j,2]*sigma_yy) - (vecAy[i,j,1]*tau_xy + vecAy[i,j,2]*tau_yy)) / volume_av
             F_vis_hat[i,j,4] = ((vecAy[i,j,1]*betax + vecAy[i,j,2]*betay) - (vecAy[i,j,1]*e_sgs_x + vecAy[i,j,2]*e_sgs_y))  / volume_av
+        end
+    end
+
+    for j in 1:cellymax
+        for i in 1:cellxmax
+            mut[i,j] = 0.25 * (mut_bd[i+1,j,1] + mut_bd[i,j,1] + mut_bd[i,j+1,2] + mut_bd[i,j,2])
         end
     end
 
@@ -188,7 +196,7 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
     println(Qbase[149,149,2])
     =#
     
-    return E_vis_hat, F_vis_hat
+    return E_vis_hat, F_vis_hat, mut
 end
 
 function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,i,j)
@@ -208,6 +216,7 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     #lsgs = 0.5*((Cs*Delta - k*y) - abs(Cs*Delta - k*y)) + k*y # min([ky, Cs*Delta])
     #nu_sgs = (lsgs)^2 * absS
     nu_sgs = (Cs*Delta)^2 * absS
+    mu_sgs = nu_sgs * rho_av
     
     #=
     if i == 20 && j == 20
@@ -261,5 +270,5 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     end
     =#
 
-    return tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y
+    return tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mu_sgs
 end

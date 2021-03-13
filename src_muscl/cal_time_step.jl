@@ -140,7 +140,7 @@ end
 # ------------------------------------
 function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qconn_hat, delta_Q,
                 A_adv_hat_p,  A_adv_hat_m,  B_adv_hat_p,  B_adv_hat_m,  A_beta_shig,  B_beta_shig,
-                jalphaP,  jbetaP, RHS, cellxmax, cellymax, volume, nval)
+                jalphaP,  jbetaP, RHS, cellxmax, cellymax, volume, nval, icell)
        
     # calculate L and U
     for m in 1:nval
@@ -156,8 +156,8 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
         end
     end
 
-    for j in 2:cellymax-1
-        for i in 2:cellxmax-1
+    for j in 1+icell:cellymax-icell
+        for i in 1+icell:cellxmax-icell
             for l in 1:nval
                 for m in 1:nval
                     LdQ[i,j,l] += Lx[i-1,j,l,m]*delta_Q[i-1,j,m] + Ly[i,j-1,l,m]*delta_Q[i,j-1,m]
@@ -168,16 +168,16 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
     end
 
     # diagonal
-    for j in 2:cellymax-1
-        for i in 2:cellxmax-1
+    for j in 1+icell:cellymax-icell
+        for i in 1+icell:cellxmax-icell
             D[i,j] = dt/dtau[i,j] + 1.0 + dt*(A_beta_shig[i,j]+2*jalphaP[i,j] + B_beta_shig[i,j]+2*jbetaP[i,j])
         end
     end
     
     # RHS
     for l in 1:nval    
-        for j in 2:cellymax-1
-            for i in 2:cellxmax-1            
+        for j in 1+icell:cellymax-icell
+            for i in 1+icell:cellxmax-icell            
                 RHS_temp[i,j,l] = - (Qcon_hat[i,j,l]-Qconn_hat[i,j,l])*1.0 + dt*RHS[i,j,l]
             end
         end
@@ -185,8 +185,8 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
 
     # lower sweep
     for l in 1:nval
-        for j in 2:cellymax-1
-            for i in 2:cellxmax-1
+        for j in 1+icell:cellymax-icell
+            for i in 1+icell:cellxmax-icell
                 delta_Q[i,j,l] = D[i,j]^(-1) * (RHS_temp[i,j,l]+LdQ[i,j,l])
             end
         end
@@ -194,8 +194,8 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
     
     # upepr sweep
     for l in 1:nval
-        for j in 2:cellymax-1
-            for i in 2:cellxmax-1
+        for j in 1+icell:cellymax-icell
+            for i in 1+icell:cellxmax-icell
                 delta_Q[i,j,l] = delta_Q[i,j,l] - D[i,j]^(-1) * UdQ[i,j,l]
             end
         end
@@ -203,8 +203,8 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
 
     # reset
     for l in 1:nval
-        for j in 2:cellymax-1
-            for i in 2:cellxmax-1
+        for j in 1+icell:cellymax-icell
+            for i in 1+icell:cellxmax-icell
                 LdQ[i,j,l] = 0.0
                 UdQ[i,j,l] = 0.0                
             end

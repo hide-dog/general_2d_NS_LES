@@ -24,7 +24,7 @@ function muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, QconU, QconD, QconL, QconR
     for l in 1:nval
         for j in 1+icell-1:cellymax-icell+1
             for i in 1+icell:cellxmax-icell+1
-                1+icell-1:cellymax+1 -icell +1
+                
                 #vecAx_xav = 0.25*( vecAx[i,j,1] + vecAx[i-1,j,1] + vecAx[i,j+1,1] + vecAx[i-1,j+1,1] )
                 #vecAx_yav = 0.25*( vecAx[i,j,2] + vecAx[i-1,j,2] + vecAx[i,j+1,2] + vecAx[i-1,j+1,2] )
                 #volume_av = 0.5*( volume[i-1,j] + volume[i-1,j+1])
@@ -62,6 +62,7 @@ function muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, QconU, QconD, QconL, QconR
                 dim = 2*(Qbase[i-1,j,l] - Qbase[i-2,j,l]) / (lim + li)
                 QbaseL[i,j,l] = Qbase[i-1,j,l] + 0.5*li*minmod(dim, dip) 
                 
+                
 
                 # ------------------------------
                 # R
@@ -83,6 +84,9 @@ function muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, QconU, QconD, QconL, QconR
                 dip = 2*(Qbase[i+1,j,l] - Qbase[i,j,l]) / (li  + lip)
                 dim = 2*(Qbase[i,j,l]   - Qbase[i-1,j,l]) / (lim + li)
                 QbaseR[i,j,l] = Qbase[i,j,l]  - 0.5*li*minmod(dip, dim) 
+
+                #QbaseL[i,j,l] = Qbase[i-1,j,l]
+                #QbaseR[i,j,l] = Qbase[i,j,l]
             end
         end
     end
@@ -119,7 +123,7 @@ function muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, QconU, QconD, QconL, QconR
 
                 dip = 2*(Qbase[i,j,l]   - Qbase[i,j-1,l]) / (li  + lip)
                 dim = 2*(Qbase[i,j-1,l] - Qbase[i,j-2,l]) / (lim + li)
-                QbaseD[i,j,l] = Qbase[i-1,j,l] + 0.5*li*minmod(dim, dip) 
+                QbaseD[i,j,l] = Qbase[i,j-1,l] + 0.5*li*minmod(dim, dip) 
 
                 # ------------------------------
                 # U
@@ -141,6 +145,9 @@ function muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, QconU, QconD, QconL, QconR
                 dip = 2*(Qbase[i,j+1,l] - Qbase[i,j,l])   / (li  + lip)
                 dim = 2*(Qbase[i,j,l]   - Qbase[i,j-1,l]) / (lim + li)
                 QbaseU[i,j,l] = Qbase[i,j,l]  - 0.5*li*minmod(dip, dim) 
+
+                #QbaseD[i,j,l] = Qbase[i,j-1,l]
+                #QbaseU[i,j,l] = Qbase[i,j,l]
             end
         end
     end
@@ -150,18 +157,13 @@ function muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, QconU, QconD, QconL, QconR
     QconL = base_to_conservative(QbaseL, QconL, cellxmax, cellymax, specific_heat_ratio)
     QconR = base_to_conservative(QbaseR, QconR, cellxmax, cellymax, specific_heat_ratio)
     
-    #println(Qbase[5,5,1])
-    #println(QbaseL[:,5,1])
-    #println(QbaseL[5,:,1])
-    #println(QbaseD[:,5,1])
-    #println(QbaseD[5,:,1])
-    #println(QbaseR[5,5,1])
-    #println(Qbase[6,5,1])
     #=
-    println(Qbase[5,1,1])
-    println(QbaseL[5,2,1])
-    println(Qbase[5,2,1])
+    println("")
+    println(Qbase[49,50,2])
+    println(QbaseL[50,50,2])
+    println(Qbase[50,50,2])
     =#
+    
     
     return QbaseU, QbaseD, QbaseL, QbaseR, QconU, QconD, QconL, QconR
 end

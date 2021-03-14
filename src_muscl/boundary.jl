@@ -148,7 +148,7 @@ function set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, g, nva
         for l in 1:nval
             for j in 1:cellymax
                 for i in 1:icell-1
-                    ii = cellxmax - (icell-1)
+                    ii = cellxmax - (icell-1) +i
                     Qbase[ii,j,l] = Qbase[ii-1,j,l]
                 end
             end 
@@ -333,6 +333,15 @@ function set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, g, nva
                 Qbase[i,jj,l] = Qbase[i,jj-1,l]
             end
         end
+    elseif Int(bdcon[4][1]) == 88
+        for i in 1:cellxmax
+            for l in 1:nval
+                Qbase[i,jj,l] = bdcon[4][l+1]
+            end
+            T = bdcon[4][nval+2]
+            p = (Qbase[i,jj,1]*Rd) * T
+            Qbase[i,jj,4] = p
+        end
     else
         println("------------------------")
         println(" boundary error ")
@@ -345,7 +354,7 @@ function set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, g, nva
         for l in 1:nval
             for i in 1:cellymax
                 for j in 1:icell-1
-                    jj = cellymax - (icell-1)
+                    jj = cellymax - (icell-1)+j
                     Qbase[i,jj,l] = Qbase[i,jj-1,l]
                 end
             end 
@@ -365,6 +374,7 @@ function check_bd(bdcon)
         elseif Int(bdcon[l][1]) == 5
         elseif Int(bdcon[l][1]) == 6
         elseif Int(bdcon[l][1]) == 7
+        elseif Int(bdcon[l][1]) == 88
         else
             println("\n check boundary condition ! \n")
             throw(UndefVarError(:x))

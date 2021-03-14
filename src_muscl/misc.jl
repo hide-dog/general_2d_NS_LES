@@ -5,7 +5,7 @@ function set_initQbase(Qbase, cellxmax, cellymax, restart_file, init_rho, init_u
                     specific_heat_ratio, out_file_front, out_ext, out_dir, restartnum, Rd, nval, icell)
 
     restart_check = 0
-    try Qbase = setup_restart_value(Qbase, cellxmax, cellymax, out_dir, restart_file, nval)
+    try Qbase = setup_restart_value(Qbase, cellxmax, cellymax, out_dir, restart_file, nval, icell)
         println("Restart "*restart_file)
         restart_check = 2
     catch 
@@ -34,7 +34,7 @@ function setup_init_value(Qbase, cellxmax, cellymax, init_rho, init_u, init_v, i
     return Qbase
 end
 
-function setup_restart_value(Qbase, cellxmax, cellymax, out_dir, restart_file, nval)
+function setup_restart_value(Qbase, cellxmax, cellymax, out_dir, restart_file, nval, icell)
     skipnum = 1
     fff = []
     open("result/"*restart_file, "r") do f
@@ -47,8 +47,8 @@ function setup_restart_value(Qbase, cellxmax, cellymax, out_dir, restart_file, n
     end
     
     k = 1
-    for i in 2:cellxmax-1
-        for j in 2:cellymax-1
+    for i in 1+icell:cellxmax-icell
+        for j in 1+icell:cellymax-icell
             temp = split(fff[k+skipnum]," ")
             for l in 1:nval
                 Qbase[i,j,l] = parse(Float64,temp[l]) 

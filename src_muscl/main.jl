@@ -212,6 +212,14 @@ function main()
                 
                 # RHS
                 RHS = setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume, icell)
+
+                #println(E_adv_hat[150,150,:])
+                #println(E_adv_hat[20,20,:])
+                #println(F_adv_hat[23,3,:])
+                #println(E_vis_hat[150,150,:])
+                #println(E_vis_hat[20,20,:])
+                #println(F_vis_hat[23,3,:])
+                
                 
                 # 粘性の更新
                 for i in 1:cellxmax

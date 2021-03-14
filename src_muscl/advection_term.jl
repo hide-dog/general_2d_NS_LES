@@ -318,7 +318,7 @@ function set_Minf(bdcon, specific_heat_ratio, Rd, nval)
 
             check = 1
 
-        elseif Int(bdcon[i][1]) == 6
+        elseif Int(bdcon[i][1]) == 6 || Int(bdcon[i][1]) == 88
             rho = bdcon[i][2]
             u = bdcon[i][3]
             v = bdcon[i][4]

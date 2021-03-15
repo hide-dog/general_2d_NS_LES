@@ -64,6 +64,7 @@ function mk_gird(xnum,ynum,x,y,outdir)
     nodes[xnum+2,:] : x方向境界
     nodes[:,ynum+2] : y方向境界
     """
+    icell = 2
     xnum_max = xnum+2
     ynum_max = ynum+2
     nodes = zeros(xnum_max, ynum_max, 3)

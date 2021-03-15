@@ -5,7 +5,11 @@
 "out_ext":".dat",         
 
 
+<<<<<<< HEAD
 "Restart":"haya",         
+=======
+"Restart":"result",         
+>>>>>>> c15c8afc37995e56aa93b21bda87f4a9cb53eeb5
 "restartnum":"030000",     
 "in_ext":".dat",
 
@@ -15,10 +19,17 @@
 
 
 "time_integ":"1",      
+<<<<<<< HEAD
 "nt":"1.0e4",          
 "dt":"5.0e-7",       
 "every_outnum":"1.0e3",      
 "inner_step":"20",       
+=======
+"nt":"1.0e6",          
+"dt":"5.0e-10",       
+"every_outnum":"1.0e5",      
+"inner_step":"40",       
+>>>>>>> c15c8afc37995e56aa93b21bda87f4a9cb53eeb5
 "dtau":"1.0e-2",       
 "CFL":"1.0e0",       
 
@@ -26,8 +37,11 @@
 "advection":"2",               
 
 
+"advection":"2",               
+
+
 "init_rho":"1.0e0",     
-"init_u":"340.0",       
+"init_u":"50.0",       
 "init_v":"0.0",       
 "init_p":"1.0e5",      
 "init_T":"300.0",      
@@ -68,7 +82,11 @@
 
 "bd4_con":"6",
 "bd4_rho":"1.0",
+<<<<<<< HEAD
 "bd4_u":"340.0",
+=======
+"bd4_u":"50.0",
+>>>>>>> c15c8afc37995e56aa93b21bda87f4a9cb53eeb5
 "bd4_v":"0.0",
 "bd4_p":"1.0e5",   
 "bd4_T":"300.0",

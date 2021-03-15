@@ -1,6 +1,10 @@
 # src path
+<<<<<<< HEAD
 src_path = "C:\\Users\\koike\\Desktop\\git\\general_2d_NS_LES\\src\\"
 
+=======
+src_path = "C:\\Users\\hidee\\Desktop\\git\\general_2d_NS_LES\\src_muscl\\"
+>>>>>>> c15c8afc37995e56aa93b21bda87f4a9cb53eeb5
 
 # main (変更しないこと)
 src_read="read_grid.jl"
@@ -17,6 +21,8 @@ include(src_path*src_read)
 src_read="converge.jl"
 include(src_path*src_read)
 src_read="misc.jl"
+include(src_path*src_read)
+src_read="muscl.jl"
 include(src_path*src_read)
 src_read="rhs.jl"
 include(src_path*src_read)

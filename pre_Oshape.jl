@@ -65,15 +65,15 @@ function mk_gird(xnum,ynum,x,y,outdir)
     nodes[:,ynum+2] : y方向境界
     """
     icell = 2
-    xnum_max = xnum+2
-    ynum_max = ynum+2
+    xnum_max = xnum + 2*icell
+    ynum_max = ynum + 2*icell
     nodes = zeros(xnum_max, ynum_max, 3)
 
     
-    for j in 2:ynum_max-1
-        for i in 2:xnum_max-1
-            nodes[i,j,1] = x[i-1,j-1]
-            nodes[i,j,2] = y[i-1,j-1]
+    for j in 1+icell:ynum_max-icell
+        for i in 1+icell:xnum_max-icell
+            nodes[i,j,1] = x[i-icell,j-icell]
+            nodes[i,j,2] = y[i-icell,j-icell]
         end
     end
 
@@ -86,13 +86,17 @@ function mk_gird(xnum,ynum,x,y,outdir)
     n = 1.0
     for j in 1:ynum_max
         for k in 1:2
+            nodes[2,j,k]        =  (1.0+n)*nodes[3,j,k] - n*nodes[4,j,k]
             nodes[1,j,k]        =  (1.0+n)*nodes[2,j,k] - n*nodes[3,j,k]
+            nodes[xnum_max-1,j,k] =  (1.0+n)*nodes[xnum_max-2,j,k] - n*nodes[xnum_max-3,j,k]
             nodes[xnum_max,j,k] =  (1.0+n)*nodes[xnum_max-1,j,k] - n*nodes[xnum_max-2,j,k]
         end
     end
     for i in 1:xnum_max
         for k in 1:2
+            nodes[i,2,k]        =  (1.0+n)*nodes[i,3,k] - n*nodes[i,4,k]
             nodes[i,1,k]        =  (1.0+n)*nodes[i,2,k] - n*nodes[i,3,k]
+            nodes[i,ynum_max-1,k] =  (1.0+n)*nodes[i,ynum_max-2,k] - n*nodes[i,ynum_max-3,k]
             nodes[i,ynum_max,k] =  (1.0+n)*nodes[i,ynum_max-1,k] - n*nodes[i,ynum_max-2,k]
         end
     end
@@ -116,8 +120,8 @@ function mk_gird(xnum,ynum,x,y,outdir)
     open(fff,"w") do f
         write(f,"nodes: xnum, ynum , x, y\n")
         k=1
-        for i in 2:xnum_max-1
-            for j in 2:ynum_max-1
+        for i in 1+icell:xnum_max-icell
+            for j in 1+icell:ynum_max-icell
                 x = @sprintf("%8.8e", nodes[i,j,1])
                 y = @sprintf("%8.8e", nodes[i,j,2])
                 z = @sprintf("%8.8e", nodes[i,j,3])
@@ -140,8 +144,8 @@ function mk_gird(xnum,ynum,x,y,outdir)
     open(fff,"w") do f
         write(f,"elements:cell_xnum, lup,rup,ldown,rdown \n")
         k=1
-        for i in 2:xnum_max-2
-            for j in 2:ynum_max-2
+        for i in 1+icell:xnum_max-icell-1
+            for j in 1+icell:ynum_max-icell-1
                 d1 = @sprintf("%1.0f", nodes_num[i,j])
                 d2 = @sprintf("%1.0f", nodes_num[i,j+1])
                 d3 = @sprintf("%1.0f", nodes_num[i+1,j+1])

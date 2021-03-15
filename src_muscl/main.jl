@@ -37,8 +37,6 @@ function main()
     # set initial condition for imaginary cell
     Qbase    = set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, specific_heat_ratio, nval, icell)
 
-    println(Qbase[:,3,1])
-
     # set volume, dx and dy
     volume = set_volume(nodes, cellxmax, cellymax, volume)
     cellcenter = set_cellcenter(cellcenter, nodes, cellxmax, cellymax)

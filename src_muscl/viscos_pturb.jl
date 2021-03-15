@@ -61,7 +61,7 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] =
                 Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av, i, j)
                 
-                #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+                #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
             #=    
                 if i == 51 && j ==3
@@ -167,7 +167,7 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             else
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,i,j)
-                #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y = 0, 0, 0, 0, 0
+                #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             end
             
             F_vis_hat[i,j,1] = 0.0

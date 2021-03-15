@@ -18,7 +18,7 @@ function write_file(outdir,inresult_dir,front,back)
     elements = read_elements(1)
 
     inf = readdir(inresult_dir)
-    cellnum = (nodes_xmax-3)*(nodes_ymax-3)
+    cellnum = (nodes_xmax-5)*(nodes_ymax-5)
     rho = zeros(cellnum)
     u = zeros(cellnum)
     v = zeros(cellnum)

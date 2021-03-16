@@ -22,6 +22,7 @@ function write_file(outdir,inresult_dir,front,back)
     rho = zeros(cellnum)
     u = zeros(cellnum)
     v = zeros(cellnum)
+    w = zeros(cellnum)
     p = zeros(cellnum)
     T = zeros(cellnum)
     

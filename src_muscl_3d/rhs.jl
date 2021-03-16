@@ -1,14 +1,18 @@
 # ------------------------------------
 # calculate right hand side
 # ------------------------------------
-function setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume, icell)
+function setup_RHS(RHS, cellxmax, cellymax, cellzmax, E_adv_hat, F_adv_hat, G_adv_hat, E_vis_hat, F_vis_hat, G_vis_hat, nval, volume, icell)
     Threads.@threads for l in 1:nval
-        for j in 1+icell:cellymax-icell
-            for i in 1+icell:cellxmax-icell
-                RHS[i,j,l] = - (E_adv_hat[i+1,  j, l] - E_vis_hat[i+1,  j, l]) +
-                             (E_adv_hat[  i,  j, l] - E_vis_hat[  i,  j, l]) -
-                             (F_adv_hat[  i,j+1, l] - F_vis_hat[  i,j+1, l]) +
-                             (F_adv_hat[  i,  j, l] - F_vis_hat[  i,  j, l])
+        for k in 1+icell:cellzmax-icell
+            for j in 1+icell:cellymax-icell
+                for i in 1+icell:cellxmax-icell
+                    RHS[i,j,k,l] = - (E_adv_hat[i+1,  j,  k, l] - E_vis_hat[i+1,  j,  k, l]) +
+                                     (E_adv_hat[  i,  j,  k, l] - E_vis_hat[  i,  j,  k, l]) -
+                                     (F_adv_hat[  i,j+1,  k, l] - F_vis_hat[  i,j+1,  k, l]) +
+                                     (F_adv_hat[  i,  j,  k, l] - F_vis_hat[  i,  j,  k, l]) -
+                                     (G_adv_hat[  i,  j,k+1, l] - G_vis_hat[  i,  j,k+1, l]) +
+                                     (G_adv_hat[  i,  j,  k, l] - G_vis_hat[  i,  j,  k, l])
+                end
             end
         end
     end

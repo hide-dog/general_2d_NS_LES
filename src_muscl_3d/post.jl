@@ -12,13 +12,13 @@ end
     
 function write_file(outdir,inresult_dir,front,back)
 
-    nodes_xmax, nodes_ymax = read_nodenum(1)
+    nodes_xmax, nodes_ymax, nodes_zmax = read_nodenum(1)
     nodes = read_nodes(1)
 
     elements = read_elements(1)
 
     inf = readdir(inresult_dir)
-    cellnum = (nodes_xmax-5)*(nodes_ymax-5)
+    cellnum = (nodes_xmax-5)*(nodes_ymax-5)*(nodes_zmax-5)
     rho = zeros(cellnum)
     u = zeros(cellnum)
     v = zeros(cellnum)
@@ -43,8 +43,9 @@ function write_file(outdir,inresult_dir,front,back)
                 rho[j-1] = parse(Float64,temp[1])
                 u[j-1] = parse(Float64,temp[2])
                 v[j-1] = parse(Float64,temp[3])
-                p[j-1] = parse(Float64,temp[4])
-                T[j-1] = parse(Float64,temp[5])
+                w[j-1] = parse(Float64,temp[4])
+                p[j-1] = parse(Float64,temp[5])
+                T[j-1] = parse(Float64,temp[6])
             end
             
             write_points(nodes,out_file,outdir,dname,front,back)
@@ -52,9 +53,10 @@ function write_file(outdir,inresult_dir,front,back)
             write_result(rho,out_file,outdir,1)
             write_result(u,out_file,outdir,2)
             write_result(v,out_file,outdir,3)
-            write_result(p,out_file,outdir,4)
-            write_result(T,out_file,outdir,5)
-            write_result_vec(u,v,out_file,outdir)
+            write_result(w,out_file,outdir,4)
+            write_result(p,out_file,outdir,5)
+            write_result(T,out_file,outdir,6)
+            write_result_vec(u,v,w,out_file,outdir)
             print("fin writing "*out_file*"\n")
         end
     end
@@ -77,8 +79,9 @@ function read_nodenum(skipnum)
     temp = split(fff[2]," ")
     xmax = parse(Int64,temp[1]) 
     ymax = parse(Int64,temp[2]) 
+    zmax = parse(Int64,temp[3]) 
     
-    return xmax, ymax
+    return xmax, ymax, zmax
 end
 
 function read_nodes(skipnum)
@@ -103,7 +106,7 @@ function read_nodes(skipnum)
         # z = parse(Float64,temp[3])
         x = parse(Float64,temp[2])
         y = parse(Float64,temp[3])
-        z = 0.0
+        z = parse(Float64,temp[4])
         nodes[i,1] = x
         nodes[i,2] = y
         nodes[i,3] = z
@@ -180,7 +183,7 @@ function write_cells(elements,out_file,outdir)
 end
 
 function write_result(val,out_file,outdir,k)
-    dtype = ["rho","u","v","p","T"]
+    dtype = ["rho","u","v","w","p","T"]
 
     a = length(val)
     a_st = @sprintf("%1.0f", a)
@@ -202,7 +205,7 @@ function write_result(val,out_file,outdir,k)
     end 
 end
 
-function write_result_vec(u,v,out_file,outdir)
+function write_result_vec(u,v,w,out_file,outdir)
     a = length(u)
     a_st = @sprintf("%1.0f", a)
     
@@ -214,7 +217,7 @@ function write_result_vec(u,v,out_file,outdir)
         #write(f, temp1)
         write(f, temp2)
         for i in 1:a
-            data = @sprintf("%7.7f", u[i])*" "*@sprintf("%7.7f", v[i])*" 0.0"
+            data = @sprintf("%7.7f", u[i])*" "*@sprintf("%7.7f", v[i])*" "*@sprintf("%7.7f", w[i])
             write(f, data)
             write(f, "\n")
         end

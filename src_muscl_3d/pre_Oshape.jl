@@ -3,6 +3,8 @@ using Printf
 function main()
 
     infile = "xy_hayabusa"
+    znum = 5
+    dz = 1e-3
 
     xnum, ynum, x, y = read_wing(infile)
 
@@ -12,8 +14,8 @@ function main()
     make_dir(result)
     result = "post_result"
     make_dir(result)
-    nodes, xnum_max, ynum_max = mk_gird(xnum,ynum,x,y,outdir)
-    vecA(nodes,xnum_max,ynum_max,outdir)
+    nodes, xnum_max, ynum_max, znum_max = mk_gird(xnum, ynum, znum, x, y, dz, outdir)
+    vecA(nodes, xnum_max, ynum_max, znum_max, outdir)
 end
 
 function read_wing(infile)
@@ -51,13 +53,14 @@ function read_wing(infile)
     return xnum, ynum, x, y 
 end
 
-function mk_gird(xnum,ynum,x,y,outdir)
+function mk_gird(xnum, ynum, znum, x, y, dz, outdir)
     """
-    nodes[i,j,k]
+    nodes[i,j,k,l]
     i   : x,r方向の番号
     j   : y,theta方向の番号
-    k=1 : 点のx座標
-    k=2 : 点のy座標
+    k   : z方向の番号
+    l=1 : 点のx座標
+    l=2 : 点のy座標
 
     nodes[1,:]      : x方向境界
     nodes[:,1]      : y方向境界
@@ -67,7 +70,8 @@ function mk_gird(xnum,ynum,x,y,outdir)
     icell = 2
     xnum_max = xnum + 2*icell
     ynum_max = ynum + 2*icell
-    nodes = zeros(xnum_max, ynum_max, 3)
+    znum_max = znum + 2*icell
+    nodes = zeros(xnum_max, ynum_max, znum_max, 3)
 
     
     for j in 1+icell:ynum_max-icell

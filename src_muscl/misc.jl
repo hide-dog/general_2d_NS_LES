@@ -3,6 +3,9 @@
 # ------------------------------------
 function set_initQbase(Qbase, cellxmax, cellymax, restart_file, init_rho, init_u, init_v, init_p, init_T,
                     specific_heat_ratio, out_file_front, out_ext, out_dir, restartnum, Rd, nval, icell)
+    
+    # 角セルに値を代入するため
+    Qbase = setup_init_value(Qbase, cellxmax, cellymax, init_rho, init_u, init_v, init_p)
 
     restart_check = 0
     try Qbase = setup_restart_value(Qbase, cellxmax, cellymax, out_dir, restart_file, nval, icell)

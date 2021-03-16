@@ -84,8 +84,10 @@ function allocation_implicit(cellxmax, cellymax, cellzmax, nval)
     D  = zeros(cellxmax, cellymax, cellzmax)                      # Diagonal of LHS
     Lx = zeros(cellxmax, cellymax, cellzmax, nval, nval)          # lower of LHS
     Ly = zeros(cellxmax, cellymax, cellzmax, nval, nval)          # lower of LHS
+    Lz = zeros(cellxmax, cellymax, cellzmax, nval, nval)          # lower of LHS
     Ux = zeros(cellxmax, cellymax, cellzmax, nval, nval)          # upper of LHS
     Uy = zeros(cellxmax, cellymax, cellzmax, nval, nval)          # upper of LHS
+    Uz = zeros(cellxmax, cellymax, cellzmax, nval, nval)          # upper of LHS
 
     LdQ = zeros(cellxmax, cellymax, cellzmax, nval)               # lower of LHS
     UdQ = zeros(cellxmax, cellymax, cellzmax, nval)               # upper of LHS
@@ -107,6 +109,6 @@ function allocation_implicit(cellxmax, cellymax, cellzmax, nval)
 
     return Qbasen, Qconn, Qconn_hat, Qbasem, dtau, lambda_facex, lambda_facey, lambda_facez,
             A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, C_adv_hat_p, C_adv_hat_m, A_beta_shig, B_beta_shig, C_beta_shig,
-            jalphaP, jbetaP, jgammaP, delta_Q, delta_Q_temp, D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, res,
+            jalphaP, jbetaP, jgammaP, delta_Q, delta_Q_temp, D, Lx, Ly, Lz, Ux, Uy, Uz, LdQ, UdQ, RHS_temp, res,
             norm2, I
 end

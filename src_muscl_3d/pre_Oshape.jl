@@ -187,45 +187,54 @@ end
 function vecA(nodes,xnum_max,ynum_max,znum_max,outdir)
 
     vecAx = zeros(xnum_max, ynum_max-1, znum_max-1, 3)
-    for i in 1:xnum_max
+    for k in 1:znum_max-1
         for j in 1:ynum_max-1
-            for k in 1:znum_max-1
+            for i in 1:xnum_max
                 # 3dim Ax=(, , 0)
-                x = nodes[i,j+1,k,2] - nodes[i,j,k,2]
-                y = nodes[i,j,k,1] - nodes[i,j+1,k,1]
-                z = nodes[i,j,k,3] - nodes[i,j+1,k,3]
-                vecAx[i,j,k,1] = x
-                vecAx[i,j,k,2] = y
-                vecAx[i,j,k,3] = z
+                a1 = nodes[i+1,j+1,k+1,1] - nodes[i+1,  j,  k,1]
+                a2 = nodes[i+1,j+1,k+1,2] - nodes[i+1,  j,  k,2]
+                a3 = nodes[i+1,j+1,k+1,3] - nodes[i+1,  j,  k,3]
+                b1 = nodes[i+1,  j,k+1,1] - nodes[i+1,j+1,  k,1]
+                b2 = nodes[i+1,  j,k+1,2] - nodes[i+1,j+1,  k,2]
+                b3 = nodes[i+1,  j,k+1,3] - nodes[i+1,j+1,  k,3]
+                vecAx[i,j,k,1] = 0.5*(a2*b3 - a3*b2)
+                vecAx[i,j,k,2] = 0.5*(a3*b1 - a1*b3)
+                vecAx[i,j,k,3] = 0.5*(a1*b2 - a2*b1)
             end
         end
     end
 
     vecAy = zeros(xnum_max-1, ynum_max, znum_max-1, 3)
-    for i in 1:xnum_max-1
+    for k in 1:znum_max-1
         for j in 1:ynum_max
-            for k in 1:znum_max-1
-            # 3dim Ay=( , , 0)
-            x = nodes[i,j,k,2]-nodes[i+1,j,k,2]
-            y = nodes[i+1,j,k,1]-nodes[i,j,k,1]
-            z = nodes[i+1,j,k,1]-nodes[i,j,k,1]
-            vecAy[i,j,k,1] = x
-            vecAy[i,j,k,2] = y
-            vecAy[i,j,k,3] = z
+            for i in 1:xnum_max-1
+                a1 = nodes[i+1,j+1,k+1,1] - nodes[  i,j+1,  k,1]
+                a2 = nodes[i+1,j+1,k+1,2] - nodes[  i,j+1,  k,2]
+                a3 = nodes[i+1,j+1,k+1,3] - nodes[  i,j+1,  k,3]
+                b1 = nodes[i+1,j+1,  k,1] - nodes[  i,j+1,k+1,1]
+                b2 = nodes[i+1,j+1,  k,2] - nodes[  i,j+1,k+1,2]
+                b3 = nodes[i+1,j+1,  k,3] - nodes[  i,j+1,k+1,3]
+                vecAy[i,j,k,1] = 0.5*(a2*b3 - a3*b2)
+                vecAy[i,j,k,2] = 0.5*(a3*b1 - a1*b3)
+                vecAy[i,j,k,3] = 0.5*(a1*b2 - a2*b1)
+            end
         end
     end
 
     vecAz = zeros(xnum_max-1, ynum_max-1, znum_max, 3)
-    for i in 1:xnum_max-1
+    for k in 1:znum_max
         for j in 1:ynum_max-1
-            for k in 1:znum_max
-            # 3dim Az=( , , 0)
-            x = nodes[i,j,k,2]-nodes[i+1,j,k,2]
-            y = nodes[i+1,j,k,1]-nodes[i,j,k,1]
-            z = nodes[i+1,j,k,1]-nodes[i,j,k,1]
-            vecAz[i,j,k,1] = x
-            vecAz[i,j,k,2] = y
-            vecAz[i,j,k,3] = z
+            for i in 1:xnum_max-1
+                a1 = nodes[i+1,j+1,k+1,1] - nodes[  i,  j,k+1,1]
+                a2 = nodes[i+1,j+1,k+1,2] - nodes[  i,  j,k+1,2]
+                a3 = nodes[i+1,j+1,k+1,3] - nodes[  i,  j,k+1,3]
+                b1 = nodes[  i,j+1,k+1,1] - nodes[i+1,  j,k+1,1]
+                b2 = nodes[  i,j+1,k+1,2] - nodes[i+1,  j,k+1,2]
+                b3 = nodes[  i,j+1,k+1,3] - nodes[i+1,  j,k+1,3]
+                vecAz[i,j,k,1] = 0.5*(a2*b3 - a3*b2)
+                vecAz[i,j,k,2] = 0.5*(a3*b1 - a1*b3)
+                vecAz[i,j,k,3] = 0.5*(a1*b2 - a2*b1)
+            end
         end
     end
 

@@ -1,19 +1,28 @@
 # ------------------------------------
 # set volume
 # ------------------------------------
-function set_volume(nodes, cellxmax, cellymax, cellzmax, volume)
+function set_volume(nodes, cellxmax, cellymax, cellzmax, vecAx, vecAy, vecAz, volume)
     for k in 1:cellzmax
         for j in 1:cellymax
             for i in 1:cellxmax
                 #----------------------------
                 #----------------------------
                 #----------------------------
-                vec_r1x = nodes[i+1,j+1,1] - nodes[i,j,1]
-                vec_r1y = nodes[i+1,j+1,2] - nodes[i,j,2]
-                vec_r2x = nodes[i,j+1,1] - nodes[i+1,j,1]
-                vec_r2y = nodes[i,j+1,2] - nodes[i+1,j,2]
+                rx = nodes[i+1,j+1,k+1,1] - nodes[i,j,1]
+                ry = nodes[i+1,j+1,k+1,2] - nodes[i,j,2]
+                rz = nodes[i+1,j+1,k+1,3] - nodes[i,j,3]
 
-                volume[i,j,k] = abs(vec_r1x*vec_r2y - vec_r1y*vec_r2x) /2
+                Ax = 0.5 * (vecAx[i,j,k,1] + vecAx[i+1,j,k,1]) +
+                     0.5 * (vecAy[i,j,k,1] + vecAy[i,j+1,k,1]) +
+                     0.5 * (vecAz[i,j,k,1] + vecAz[i,j,k+1,1])
+                Ay = 0.5 * (vecAx[i,j,k,2] + vecAx[i+1,j,k,2]) +
+                     0.5 * (vecAy[i,j,k,2] + vecAy[i,j+1,k,2]) +
+                     0.5 * (vecAz[i,j,k,2] + vecAz[i,j,k+1,2])
+                Az = 0.5 * (vecAx[i,j,k,3] + vecAx[i+1,j,k,3]) +
+                     0.5 * (vecAy[i,j,k,3] + vecAy[i,j+1,k,3]) +
+                     0.5 * (vecAz[i,j,k,3] + vecAz[i,j,k+1,3])
+
+                volume[i,j,k] = (Ax*rx + Ay*ry + Az*rz) /3
             end
         end
     end

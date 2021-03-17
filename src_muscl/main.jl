@@ -301,7 +301,7 @@ function main()
                 Qbase_ave = cal_Qave(Qbasem, Qbase_ave, cellxmax, cellymax, nval)
 
                 # Find out if the results were divergent
-                check_divrege(Qbase, cellxmax, cellymax, Rd, fwrite, icell)
+                check_divrege(Qbasem, cellxmax, cellymax, Rd, fwrite, icell)
             end
             # End of the inner iteration
 

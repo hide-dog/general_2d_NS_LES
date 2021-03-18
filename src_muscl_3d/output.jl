@@ -3,7 +3,8 @@ using Printf
 # ------------------------------------
 # output results
 # ------------------------------------
-function output_result(stepnum, Qbase, cellxmax, cellymax, cellzmax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+function output_result(stepnum, Qbase, cellxmax, cellymax, cellzmax, specific_heat_ratio, 
+                        out_file_front, out_ext, out_dir, Rd, nval, icell)
     
     stepnum = string(stepnum)
     while length(stepnum) < 6
@@ -17,10 +18,10 @@ function output_result(stepnum, Qbase, cellxmax, cellymax, cellzmax, specific_he
             for j in 1+icell:cellymax-icell
                 for k in 1+icell:cellzmax-icell
                     for l in 1:nval
-                        a = @sprintf("%8.8e", Qbase[i,j,l])
+                        a = @sprintf("%8.8e", Qbase[i,j,k,l])
                         write(f, a*" ")
                     end
-                    T = Qbase[i,j,5]/(Qbase[i,j,1]*Rd)
+                    T = Qbase[i,j,k,5]/(Qbase[i,j,k,1]*Rd)
                     a = @sprintf("%8.8e", T)
                     write(f, a*"\n")
                 end
@@ -34,7 +35,8 @@ end
 # ------------------------------------
 # output results ( + yplus) 
 # ------------------------------------
-function output_result1(stepnum, Qbase, yplus, cellxmax, cellymax, cellzmax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+function output_result1(stepnum, Qbase, yplus, cellxmax, cellymax, cellzmax, specific_heat_ratio,
+                        out_file_front, out_ext, out_dir, Rd, nval, icell)
     
     stepnum = string(stepnum)
     while length(stepnum) < 6
@@ -48,13 +50,13 @@ function output_result1(stepnum, Qbase, yplus, cellxmax, cellymax, cellzmax, spe
             for j in 1+icell:cellymax-icell
                 for k in 1+icell:cellzmax-icell
                     for l in 1:nval
-                        a = @sprintf("%8.8e", Qbase[i,j,l])
+                        a = @sprintf("%8.8e", Qbase[i,j,k,l])
                         write(f, a*" ")
                     end
-                    T = Qbase[i,j,5]/(Qbase[i,j,1]*Rd)
+                    T = Qbase[i,j,k,5]/(Qbase[i,j,k,1]*Rd)
                     a = @sprintf("%8.8e", T)
                     write(f, a* " ")
-                    a = @sprintf("%8.8e", yplus[i,j])
+                    a = @sprintf("%8.8e", yplus[i,j,k])
                     write(f, a*"\n")
                 end
             end
@@ -75,10 +77,10 @@ function output_ave(Qbase_ave, cellxmax, cellymax, cellzmax, out_file_front, out
             for j in 1+icell:cellymax-icell
                 for k in 1+icell:cellzmax-icell
                     for l in 1:nval
-                        a = @sprintf("%8.8e", Qbase_ave[i,j,l] / loop_ite)
+                        a = @sprintf("%8.8e", Qbase_ave[i,j,k,l] / loop_ite)
                         write(f, a*" ")
                     end
-                    T = Qbase_ave[i,j,5]/(Qbase_ave[i,j,1]*Rd) / loop_ite
+                    T = Qbase_ave[i,j,k,5]/(Qbase_ave[i,j,k,1]*Rd) / loop_ite
                     a = @sprintf("%8.8e", T)
                     write(f, a*"\n")
                 end
@@ -120,7 +122,7 @@ function output_innertime(fwrite, tau, norm2, nval)
     end
 end
 
-function output_fin(fwrite, start_t, end_t, nt, dt, in_nt, cellxmax, cellymax)
+function output_fin(fwrite, start_t, end_t, nt, dt, in_nt, cellxmax, cellymax, cellzmax)
     
     etime = end_t - start_t     # 経過時間
     outtime = ["temp"]
@@ -141,7 +143,7 @@ function output_fin(fwrite, start_t, end_t, nt, dt, in_nt, cellxmax, cellymax)
     et_s = @sprintf( "%02d", et_s)    # 文字列への変換
     et = et_h*":"*et_m*":"*et_s       # 結合
 
-    numcell = string(cellxmax * cellymax)
+    numcell = string(cellxmax * cellymax * cellzmax)
     dt      = string(dt)
     nt      = string(nt)
     in_nt   = string(in_nt)

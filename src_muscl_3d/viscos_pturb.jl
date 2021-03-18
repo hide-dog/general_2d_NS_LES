@@ -2,7 +2,7 @@
 # calcucation of the viscosity term by central difference
 # ------------------------------------
 function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR, QbaseF, QbaseB, 
-                    QconU, QconD, QconL, QconR, QconF, QconB, cellxmax, cellymax, mu, mut, mut_bd, lambda,
+                    QconU, QconD, QconL, QconR, QconF, QconB, cellxmax, cellymax, cellzmax, mu, mut, mut_bd, lambda,
                     vecAx, vecAy, vecAz, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall, icell)
     
     for k in 1+icell:cellzmax -icell
@@ -84,23 +84,23 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
         
                 betax = u_av*sigma_xx + v_av*sigma_xy + w_av*sigma_xz + lambda_av * dTdx
                 betay = u_av*sigma_xy + v_av*sigma_yy + w_av*sigma_yz + lambda_av * dTdy
-                betaz = u_av*sigma_xz + v_av*sigma_zy + w_av*sigma_zz + lambda_av * dTdz
+                betaz = u_av*sigma_xz + v_av*sigma_yz + w_av*sigma_zz + lambda_av * dTdz
                 
                 yplus_av = 0.5 *(yplus[i-1,j,k] + yplus[i,j,k])
 
                 if swith_wall[1] == 1 && i == 1+icell
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
-                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 elseif swith_wall[2] == 1 && i == cellxmax - icell
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
-                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 else
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
-                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,1] = 
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,1] = 
                     Smagorinsky_model(dudx, dudy, dudz, dvdx, dvdy, dvdz, dwdx, dwdy, dwdz, dTdx, dTdy, dTdz,
                                     rho_av, u_av, v_av, w_av, volume_av, yplus_av, i, j)
                     
-                    #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,k,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
                 #=    
                     if i == 51 && j ==3
@@ -211,24 +211,17 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                 vecAz_yav    = 0.25*( vecAz[i,j,k,2] + vecAz[i,j,k+1,2] + vecAz[i,j-1,k,2] + vecAz[i,j-1,k+1,2] )
                 vecAz_zav    = 0.25*( vecAz[i,j,k,3] + vecAz[i,j,k+1,3] + vecAz[i,j-1,k,3] + vecAz[i,j-1,k+1,3] )
 
+                dudx = vecAx_xav * dudxi + vecAy[i,j,k,1] * dudeta + vecAz_xav * dudzeta
+                dudy = vecAx_yav * dudxi + vecAy[i,j,k,2] * dudeta + vecAz_yav * dudzeta
+                dudz = vecAx_zav * dudxi + vecAy[i,j,k,3] * dudeta + vecAz_zav * dudzeta
 
+                dvdx = vecAx_xav * dvdxi + vecAy[i,j,k,1] * dvdeta + vecAz_xav * dvdzeta
+                dvdy = vecAx_yav * dvdxi + vecAy[i,j,k,2] * dvdeta + vecAz_yav * dvdzeta
+                dvdz = vecAx_zav * dvdxi + vecAy[i,j,k,3] * dvdeta + vecAz_zav * dvdzeta
 
-                dudx = vecAx_xav * dudxi + vecAy[i,j,1] * dudeta
-                dvdy = vecAx_yav * dvdxi + vecAy[i,j,2] * dvdeta
-                dudy = vecAx_yav * dudxi + vecAy[i,j,2] * dudeta
-                dvdx = vecAx_xav * dvdxi + vecAy[i,j,1] * dvdeta
-            
-                dudx = vecAx_xav * dudxi + vecAy[i,j,1] * dudeta + vecAz_xav * dudzeta
-                dudy = vecAx_yav * dudxi + vecAy[i,j,2] * dudeta + vecAz_yav * dudzeta
-                dudz = vecAx_zav * dudxi + vecAy[i,j,3] * dudeta + vecAz_zav * dudzeta
-
-                dvdx = vecAx_xav * dvdxi + vecAy[i,j,1] * dvdeta + vecAz_xav * dvdzeta
-                dvdy = vecAx_yav * dvdxi + vecAy[i,j,2] * dvdeta + vecAz_yav * dvdzeta
-                dvdz = vecAx_zav * dvdxi + vecAy[i,j,3] * dvdeta + vecAz_zav * dvdzeta
-
-                dwdx = vecAx_xav * dwdxi + vecAy[i,j,1] * dwdeta + vecAz_xav * dwdzeta
-                dwdy = vecAx_yav * dwdxi + vecAy[i,j,2] * dwdeta + vecAz_yav * dwdzeta
-                dwdz = vecAx_zav * dwdxi + vecAy[i,j,3] * dwdeta + vecAz_zav * dwdzeta
+                dwdx = vecAx_xav * dwdxi + vecAy[i,j,k,1] * dwdeta + vecAz_xav * dwdzeta
+                dwdy = vecAx_yav * dwdxi + vecAy[i,j,k,2] * dwdeta + vecAz_yav * dwdzeta
+                dwdz = vecAx_zav * dwdxi + vecAy[i,j,k,3] * dwdeta + vecAz_zav * dwdzeta
                                 
                 sigma_xx = 2/3*mu_av*( 2*dudx -   dvdy -   dwdz )
                 sigma_yy = 2/3*mu_av*( - dudx + 2*dvdy -   dwdz )
@@ -238,25 +231,25 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                 sigma_xz = mu_av*( dvdz + dwdy )
                 sigma_yz = mu_av*( dwdx + dudz )
                 
-                dTdx = vecAx_xav*dTdxi + vecAy[i,j,1]*dTdeta + vecAz_xav*dTdzeta
-                dTdy = vecAx_yav*dTdxi + vecAy[i,j,2]*dTdeta + vecAz_yav*dTdzeta
-                dTdz = vecAx_zav*dTdxi + vecAy[i,j,3]*dTdeta + vecAz_zav*dTdzeta
+                dTdx = vecAx_xav*dTdxi + vecAy[i,j,k,1]*dTdeta + vecAz_xav*dTdzeta
+                dTdy = vecAx_yav*dTdxi + vecAy[i,j,k,2]*dTdeta + vecAz_yav*dTdzeta
+                dTdz = vecAx_zav*dTdxi + vecAy[i,j,k,3]*dTdeta + vecAz_zav*dTdzeta
         
                 betax = u_av*sigma_xx + v_av*sigma_xy + w_av*sigma_xz + lambda_av * dTdx
                 betay = u_av*sigma_xy + v_av*sigma_yy + w_av*sigma_yz + lambda_av * dTdy
-                betaz = u_av*sigma_xz + v_av*sigma_zy + w_av*sigma_zz + lambda_av * dTdz
+                betaz = u_av*sigma_xz + v_av*sigma_yz + w_av*sigma_zz + lambda_av * dTdz
                         
                 yplus_av = 0.5 *(yplus[i,j-1,k] + yplus[i,j,k])
 
                 if swith_wall[3] == 1 && j == 1+icell
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
-                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 elseif swith_wall[3] == 1 && j == cellymax - icell
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
-                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 else
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
-                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,2] = 
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,2] = 
                     Smagorinsky_model(dudx, dudy, dudz, dvdx, dvdy, dvdz, dwdx, dwdy, dwdz, dTdx, dTdy, dTdz,
                                     rho_av, u_av, v_av, w_av, volume_av, yplus_av, i, j)
                 end
@@ -353,19 +346,19 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
         
                 betax = u_av*sigma_xx + v_av*sigma_xy + w_av*sigma_xz + lambda_av * dTdx
                 betay = u_av*sigma_xy + v_av*sigma_yy + w_av*sigma_yz + lambda_av * dTdy
-                betaz = u_av*sigma_xz + v_av*sigma_zy + w_av*sigma_zz + lambda_av * dTdz
+                betaz = u_av*sigma_xz + v_av*sigma_yz + w_av*sigma_zz + lambda_av * dTdz
                 
                 yplus_av = 0.5 *(yplus[i,j,k] + yplus[i,j,k-1])
 
                 if swith_wall[5] == 1 && i == 1+icell
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
-                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,3] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,3] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 elseif swith_wall[6] == 1 && i == cellzmax - icell
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
-                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,3] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,3] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 else
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
-                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,3] = 
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,3] = 
                     Smagorinsky_model(dudx, dudy, dudz, dvdx, dvdy, dvdz, dwdx, dwdy, dwdz, dTdx, dTdy, dTdz,
                                     rho_av, u_av, v_av, w_av, volume_av, yplus_av, i, j)
                 end

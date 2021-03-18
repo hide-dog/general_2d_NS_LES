@@ -106,7 +106,7 @@ function set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax, cellzmax
 	distance = 0
 
 	# 最大値を2つ抽出
-	for k in 1+icell:cellymax-icell
+	for k in 1+icell:cellzmax-icell
 		for j in 1+icell:cellymax-icell
 			for i in 1+icell:cellxmax-icell
 				for n in 1:nop

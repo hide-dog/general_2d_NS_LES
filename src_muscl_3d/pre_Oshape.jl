@@ -4,7 +4,7 @@ function main()
 
     infile = "xy_hayabusa"
     znum = 5
-    dz = 1e-3
+    dz = 1e-1
 
     xnum, ynum, x, y = read_wing(infile)
 
@@ -136,15 +136,17 @@ function mk_gird(xnum, ynum, znum, x, y, dz, outdir)
     fff=outdir*"/nodes_forvtk"
     open(fff,"w") do f
         write(f,"nodes: xnum, ynum, znum, x, y, z\n")
-        k=1
+        ite=1
         for i in 1+icell:xnum_max-icell
             for j in 1+icell:ynum_max-icell
-                x = @sprintf("%8.8e", nodes[i,j,1])
-                y = @sprintf("%8.8e", nodes[i,j,2])
-                z = @sprintf("%8.8e", nodes[i,j,3])
+                for k in 1+icell:znum_max-icell
+                x = @sprintf("%8.8e", nodes[i,j,k,1])
+                y = @sprintf("%8.8e", nodes[i,j,k,2])
+                z = @sprintf("%8.8e", nodes[i,j,k,3])
                 write(f,string(k)*" "*x*" "*y*" "*z*"\n")
-                nodes_num[i,j] = k
-                k = k+1
+                nodes_num[i,j,k] = ite
+                ite = ite+1
+                end
             end
         end
     end
@@ -191,12 +193,12 @@ function vecA(nodes,xnum_max,ynum_max,znum_max,outdir)
         for j in 1:ynum_max-1
             for i in 1:xnum_max
                 # 3dim Ax=(, , 0)
-                a1 = nodes[i+1,j+1,k+1,1] - nodes[i+1,  j,  k,1]
-                a2 = nodes[i+1,j+1,k+1,2] - nodes[i+1,  j,  k,2]
-                a3 = nodes[i+1,j+1,k+1,3] - nodes[i+1,  j,  k,3]
-                b1 = nodes[i+1,  j,k+1,1] - nodes[i+1,j+1,  k,1]
-                b2 = nodes[i+1,  j,k+1,2] - nodes[i+1,j+1,  k,2]
-                b3 = nodes[i+1,  j,k+1,3] - nodes[i+1,j+1,  k,3]
+                a1 = nodes[  i,j+1,k+1,1] - nodes[  i,  j,  k,1]
+                a2 = nodes[  i,j+1,k+1,2] - nodes[  i,  j,  k,2]
+                a3 = nodes[  i,j+1,k+1,3] - nodes[  i,  j,  k,3]
+                b1 = nodes[  i,  j,k+1,1] - nodes[  i,j+1,  k,1]
+                b2 = nodes[  i,  j,k+1,2] - nodes[  i,j+1,  k,2]
+                b3 = nodes[  i,  j,k+1,3] - nodes[  i,j+1,  k,3]
                 vecAx[i,j,k,1] = 0.5*(a2*b3 - a3*b2)
                 vecAx[i,j,k,2] = 0.5*(a3*b1 - a1*b3)
                 vecAx[i,j,k,3] = 0.5*(a1*b2 - a2*b1)
@@ -208,12 +210,12 @@ function vecA(nodes,xnum_max,ynum_max,znum_max,outdir)
     for k in 1:znum_max-1
         for j in 1:ynum_max
             for i in 1:xnum_max-1
-                a1 = nodes[i+1,j+1,k+1,1] - nodes[  i,j+1,  k,1]
-                a2 = nodes[i+1,j+1,k+1,2] - nodes[  i,j+1,  k,2]
-                a3 = nodes[i+1,j+1,k+1,3] - nodes[  i,j+1,  k,3]
-                b1 = nodes[i+1,j+1,  k,1] - nodes[  i,j+1,k+1,1]
-                b2 = nodes[i+1,j+1,  k,2] - nodes[  i,j+1,k+1,2]
-                b3 = nodes[i+1,j+1,  k,3] - nodes[  i,j+1,k+1,3]
+                a1 = nodes[i+1,  j,k+1,1] - nodes[  i,  j,  k,1]
+                a2 = nodes[i+1,  j,k+1,2] - nodes[  i,  j,  k,2]
+                a3 = nodes[i+1,  j,k+1,3] - nodes[  i,  j,  k,3]
+                b1 = nodes[i+1,  j,  k,1] - nodes[  i,  j,k+1,1]
+                b2 = nodes[i+1,  j,  k,2] - nodes[  i,  j,k+1,2]
+                b3 = nodes[i+1,  j,  k,3] - nodes[  i,  j,k+1,3]
                 vecAy[i,j,k,1] = 0.5*(a2*b3 - a3*b2)
                 vecAy[i,j,k,2] = 0.5*(a3*b1 - a1*b3)
                 vecAy[i,j,k,3] = 0.5*(a1*b2 - a2*b1)
@@ -225,12 +227,12 @@ function vecA(nodes,xnum_max,ynum_max,znum_max,outdir)
     for k in 1:znum_max
         for j in 1:ynum_max-1
             for i in 1:xnum_max-1
-                a1 = nodes[i+1,j+1,k+1,1] - nodes[  i,  j,k+1,1]
-                a2 = nodes[i+1,j+1,k+1,2] - nodes[  i,  j,k+1,2]
-                a3 = nodes[i+1,j+1,k+1,3] - nodes[  i,  j,k+1,3]
-                b1 = nodes[  i,j+1,k+1,1] - nodes[i+1,  j,k+1,1]
-                b2 = nodes[  i,j+1,k+1,2] - nodes[i+1,  j,k+1,2]
-                b3 = nodes[  i,j+1,k+1,3] - nodes[i+1,  j,k+1,3]
+                a1 = nodes[i+1,j+1,  k,1] - nodes[  i,  j,  k,1]
+                a2 = nodes[i+1,j+1,  k,2] - nodes[  i,  j,  k,2]
+                a3 = nodes[i+1,j+1,  k,3] - nodes[  i,  j,  k,3]
+                b1 = nodes[  i,j+1,  k,1] - nodes[i+1,  j,  k,1]
+                b2 = nodes[  i,j+1,  k,2] - nodes[i+1,  j,  k,2]
+                b3 = nodes[  i,j+1,  k,3] - nodes[i+1,  j,  k,3]
                 vecAz[i,j,k,1] = 0.5*(a2*b3 - a3*b2)
                 vecAz[i,j,k,2] = 0.5*(a3*b1 - a1*b3)
                 vecAz[i,j,k,3] = 0.5*(a1*b2 - a2*b1)

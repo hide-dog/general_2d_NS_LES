@@ -8,9 +8,9 @@ function set_volume(nodes, cellxmax, cellymax, cellzmax, vecAx, vecAy, vecAz, vo
                 #----------------------------
                 #----------------------------
                 #----------------------------
-                rx = nodes[i+1,j+1,k+1,1] - nodes[i,j,1]
-                ry = nodes[i+1,j+1,k+1,2] - nodes[i,j,2]
-                rz = nodes[i+1,j+1,k+1,3] - nodes[i,j,3]
+                rx = nodes[i+1,j+1,k+1,1] - nodes[i,j,k,1]
+                ry = nodes[i+1,j+1,k+1,2] - nodes[i,j,k,2]
+                rz = nodes[i+1,j+1,k+1,3] - nodes[i,j,k,3]
 
                 Ax = 0.5 * (vecAx[i,j,k,1] + vecAx[i+1,j,k,1]) +
                      0.5 * (vecAy[i,j,k,1] + vecAy[i,j+1,k,1]) +
@@ -64,12 +64,12 @@ function set_dx_lts(dx, dy, dz, nodes, cellxmax, cellymax, cellzmax, icell)
     for k in 1+icell:cellzmax -icell
         for j in 1+icell:cellymax -icell
             for i in 1+icell:cellxmax+1 -icell
-                x1 = nodes[i,j,1]
-                y1 = nodes[i,j,2]
-                z1 = nodes[i,j,3]
-                x2 = nodes[i,j+1,1]
-                y2 = nodes[i,j+1,2]
-                z2 = nodes[i,j+1,3]
+                x1 = nodes[i,j,k,1]
+                y1 = nodes[i,j,k,2]
+                z1 = nodes[i,j,k,3]
+                x2 = nodes[i,j+1,k,1]
+                y2 = nodes[i,j+1,k,2]
+                z2 = nodes[i,j+1,k,3]
                 
                 if (x2 - x1) == 0.0
                     a = 0.0

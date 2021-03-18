@@ -1,7 +1,8 @@
 # ------------------------------------
 # calculate right hand side
 # ------------------------------------
-function setup_RHS(RHS, cellxmax, cellymax, cellzmax, E_adv_hat, F_adv_hat, G_adv_hat, E_vis_hat, F_vis_hat, G_vis_hat, nval, volume, icell)
+function setup_RHS(RHS, cellxmax, cellymax, cellzmax, E_adv_hat, F_adv_hat, G_adv_hat, 
+                    E_vis_hat, F_vis_hat, G_vis_hat, nval, volume, icell)
     Threads.@threads for l in 1:nval
         for k in 1+icell:cellzmax-icell
             for j in 1+icell:cellymax-icell

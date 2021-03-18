@@ -127,14 +127,13 @@ function read_elements(skipnum)
         fff[i]=replace(fff[i]," \r" => "")
     end
 
-    elements = zeros(num_elements,4)
+    elements = zeros(num_elements,8)
     for i in 1:num_elements
         temp=split(fff[i+skipnum]," ")
 
-        elements[i,1] = parse(Int64,temp[2])-1
-        elements[i,2] = parse(Int64,temp[3])-1
-        elements[i,3] = parse(Int64,temp[4])-1
-        elements[i,4] = parse(Int64,temp[5])-1
+        for j in 1:8
+            elements[i,j] = parse(Int64,temp[j+1])-1
+        end
     end
     return elements
 end 
@@ -161,7 +160,7 @@ end
 
 function write_cells(elements,out_file,outdir)
     a = size(elements)[1]
-    b = a*5
+    b = a*9
     a_st = @sprintf("%1.0f", a)
     b_st = @sprintf("%1.0f", b)
 
@@ -173,11 +172,16 @@ function write_cells(elements,out_file,outdir)
             d2 = @sprintf("%1.0f", elements[i,2])
             d3 = @sprintf("%1.0f", elements[i,3])
             d4 = @sprintf("%1.0f", elements[i,4])
-            write(f, "4 "*d1*" "*d2*" "*d3*" "*d4*"\n")
+            write(f, "8 "*d1*" "*d2*" "*d3*" "*d4)
+            d1 = @sprintf("%1.0f", elements[i,5])
+            d2 = @sprintf("%1.0f", elements[i,6])
+            d3 = @sprintf("%1.0f", elements[i,7])
+            d4 = @sprintf("%1.0f", elements[i,8])
+            write(f, " "*d1*" "*d2*" "*d3*" "*d4*"\n")
         end
         write(f, "CELL_TYPES "*a_st*"\n")
         for i in 1:a
-            write(f, "9\n")          #四角のみ
+            write(f, "12\n")          #四角のみ
         end
     end     
     println("fin writing cells")

@@ -32,7 +32,7 @@ function common_allocation(cellxmax, cellymax, cellzmax, nval)
     mu     = zeros(cellxmax, cellymax, cellzmax)                 # viscosity
     lambda = zeros(cellxmax, cellymax, cellzmax)                 # thermal Conductivity
     mut    = zeros(cellxmax, cellymax, cellzmax)                 # turb viscosity
-    mut_bd = zeros(cellxmax+1, cellymax+1, cellzmax+1, 2)        # turb viscosity on bd
+    mut_bd = zeros(cellxmax+1, cellymax+1, cellzmax+1, 3)        # turb viscosity on bd
 
     RHS = zeros(cellxmax, cellymax, cellzmax, nval)              # right hand side
     

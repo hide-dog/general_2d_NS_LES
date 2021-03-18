@@ -10,41 +10,43 @@ function main()
     PARAMDAT = "PARAMDAT.json"  # directory
     fwrite   = "write"          # write file 
     
-    nval = 4         # number of conserved variables
+    nval = 5         # number of conserved variables
     Rd   = 287.0     # gas constant of air, J/(kg K)
     R    = 8.314     # gas constant, J/(K mol)
     icell = 2        # imaginary cell
     
     # read grids and parameter
-    xmax, ymax, nodes, vecAx, vecAy = read_allgrid()
+    xmax, ymax, zmax, nodes, vecAx, vecAy, vecAz = read_allgrid()
     out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
     time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
-    init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon = input_para(PARAMDAT)
+    init_rho, init_u, init_v, init_w, init_p, init_T, specific_heat_ratio, Rd, bdcon = input_para(PARAMDAT)
     
     # number of cells
     cellxmax = xmax - 1
     cellymax = ymax - 1
+    cellzmax = zmax - 1
     
     # allocation
-    Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, mut, mut_bd, lambda, 
-    E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, RHS, QbaseU, QbaseD, QbaseL, QbaseR,
-    QconU, QconD, QconL, QconR = common_allocation(cellxmax, cellymax, nval)
+    Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, dz, Qcon, Qcon_hat, mu, mut, mut_bd, lambda, 
+    E_adv_hat, F_adv_hat, G_adv_hat, E_vis_hat, F_vis_hat, G_vis_hat, RHS, QbaseU, QbaseD, QbaseL, QbaseR, QbaseF, QbaseB,
+    QconU, QconD, QconL, QconR, QconF, QconB = common_allocation(cellxmax, cellymax, cellzmax, nval)
     
     # set initial condition
-    Qbase, restartnum = set_initQbase(Qbase, cellxmax, cellymax, restart_file, init_rho, init_u, init_v, init_p, init_T,
-                                      specific_heat_ratio, out_file_front, out_ext, out_dir, restartnum, Rd, nval, icell)
+    Qbase, restartnum = set_initQbase(Qbase, cellxmax, cellymax, cellzmax, restart_file, 
+                                        init_rho, init_u, init_v, init_w, init_p, init_T,
+                                        specific_heat_ratio, out_file_front, out_ext, out_dir, restartnum, Rd, nval, icell)
    
     # set initial condition for imaginary cell
-    Qbase    = set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, specific_heat_ratio, nval, icell)
+    Qbase    = set_boundary(Qbase, cellxmax, cellymax, cellzmax, vecAx, vecAy, vecAz, bdcon, Rd, specific_heat_ratio, nval, icell)
 
     # set volume, dx and dy
-    volume = set_volume(nodes, cellxmax, cellymax, volume)
-    cellcenter = set_cellcenter(cellcenter, nodes, cellxmax, cellymax)
-    dx, dy = set_dx_lts(dx, dy, nodes, cellxmax, cellymax, icell)
+    volume = set_volume(nodes, cellxmax, cellymax, cellzmax, vecAx, vecAy, vecAz, volume)
+    cellcenter = set_cellcenter(cellcenter, nodes, cellxmax, cellymax, cellzmax)
+    #dx, dy, dz = set_dx_lts(dx, dy, dz, nodes, cellxmax, cellymax, cellzmax, icell)
     reset_write(fwrite)
 
     # wally
-    wally, swith_wall = set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax, icell)
+    wally, swith_wall = set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax, cellzmax, icell)
 
     # AUSM+up
     Minf = 0.0
@@ -70,81 +72,61 @@ function main()
             loop_ite += 1
             
             # step number
-            evalnum = t + restartnum
+            stepnum = t + restartnum
             
             # set conserved variables in the general coordinate system
-            Qbase    = set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, specific_heat_ratio, nval, icell)
-            Qcon     = base_to_conservative(Qbase, Qcon, cellxmax, cellymax, specific_heat_ratio)
-            Qcon_hat = setup_Qcon_hat(Qcon, Qcon_hat, cellxmax, cellymax, volume, nval)
+            Qbase    = set_boundary(Qbase, cellxmax, cellymax, cellzmax, vecAx, vecAy, vecAz, 
+                                    bdcon, Rd, specific_heat_ratio, nval, icell)
+            Qcon     = base_to_conservative(Qbase, Qcon, cellxmax, cellymax, cellzmax, specific_heat_ratio)
+            Qcon_hat = setup_Qcon_hat(Qcon, Qcon_hat, cellxmax, cellymax, cellzmax, volume, nval)
             
             # muscl
-            QbaseU, QbaseD, QbaseL, QbaseR, 
-            QconU, QconD, QconL, QconR = muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, 
-                                                QconU, QconD, QconL, QconR, cellxmax, cellymax, vecAx, vecAy,
-                                                nval, icell, specific_heat_ratio, volume, nodes)
+            QbaseU, QbaseD, QbaseL, QbaseR, QbaseF, QbaseB, 
+            QconU, QconD, QconL, QconR, QconF, QconB = muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, QbaseF, QbaseB, 
+                                                            QconU, QconD, QconL, QconR, QconF, QconB, 
+                                                            cellxmax, cellymax, cellzmax, nval, icell, specific_heat_ratio, volume, nodes)
             
             # set viscosity and thermal Conductivity
-            mu     = set_mu(mu, Qbase, cellxmax, cellymax, specific_heat_ratio, Rd)
-            lambda = set_lambda(lambda, Qbase, cellxmax, cellymax, mu, specific_heat_ratio, Rd)
+            mu     = set_mu(mu, Qbase, cellxmax, cellymax, cellzmax, specific_heat_ratio, Rd)
+            lambda = set_lambda(lambda, Qbase, cellxmax, cellymax, cellzmax, mu, specific_heat_ratio, Rd)
             
             # yplus
-            yplus = cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecAx, vecAy, volume, icell)
+            yplus = cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, cellzmax, vecAx, vecAy, vecAz, volume, icell)
             #yplus = ones(cellxmax, cellymax)*100                  # yplus
             
             # advection_term
-            E_adv_hat, F_adv_hat = AUSM(E_adv_hat, F_adv_hat, QbaseU, QbaseD, QbaseL, QbaseR, 
-                                    QconU, QconD, QconL, QconR, cellxmax, cellymax, vecAx, vecAy, 
-                                    specific_heat_ratio, volume, nval, Minf, ad_scheme, icell)
+            E_adv_hat, F_adv_hat, G_adv_hat = AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, QbaseL, QbaseR, 
+                                                QconF, QconB, QconU, QconD, QconL, QconR, cellxmax, cellymax, cellzmax, 
+                                                vecAx, vecAy, vecAz, specific_heat_ratio, volume, nval, Minf, ad_scheme, icell)
                         
             # viscos_term
-            E_vis_hat, F_vis_hat, mut = central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR, 
-                                                QconU, QconD, QconL, QconR, cellxmax, cellymax, mu, mut, mut_bd,lambda,
-                                                vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall, icell)
-            
-            #println(" fff ")
-            #println(E_adv_hat[150,150,:])
-            #println(E_adv_hat[20,20,:])
-            #println(F_adv_hat[23,3,:])
-            #println(E_vis_hat[150,150,:])
-            #println(E_vis_hat[20,20,:])
-            #println(F_vis_hat[23,3,:])
-            
-
-            #throw(UndefVarError(:x))
-            
-            #println(yplus[:,1])
-            #println(" yplus ")
-            #println(yplus[1000,2])
-            #println(yplus[1000,3])
-            #println(mu[1000,2] / Qbase[1000,2,1])
-            #println(yplus[:,4])
-            #println(yplus[:,5])
-            #println(wally[1000,2])
-            #println(wally[1000,3])
-            #throw(UndefVarError(:x))
-            
+            E_vis_hat, F_vis_hat, G_vis_hat, mut = central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR, QbaseF, QbaseB, 
+                                                            QconU, QconD, QconL, QconR, QconF, QconB, cellxmax, cellymax, cellzmax, mu, mut, mut_bd, lambda,
+                                                            vecAx, vecAy, vecAz, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall, icell)
 
             # RHS
-            RHS = setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume, icell)
+            RHS = setup_RHS(RHS, cellxmax, cellymax, cellzmax, E_adv_hat, F_adv_hat, G_adv_hat, 
+                            E_vis_hat, F_vis_hat, G_vis_hat, nval, volume, icell)
             
             # time integral
-            Qcon_hat = time_integration_explicit(dt, Qcon_hat, RHS, cellxmax, cellymax, nval, icell)
+            Qcon_hat = time_integration_explicit(dt, Qcon_hat, RHS, cellxmax, cellymax, cellzmax, nval, icell)
             
             # calculate primitive variables
-            Qcon  = Qhat_to_Q(Qcon, Qcon_hat, cellxmax, cellymax, volume, nval)
-            Qbase = conservative_to_base(Qbase, Qcon, cellxmax, cellymax, specific_heat_ratio)
-            Qbase_ave = cal_Qave(Qbase, Qbase_ave, cellxmax, cellymax, nval)
+            Qcon  = Qhat_to_Q(Qcon, Qcon_hat, cellxmax, cellymax, cellzmax, volume, nval)
+            Qbase = conservative_to_base(Qbase, Qcon, cellxmax, cellymax, cellzmax, specific_heat_ratio)
+            Qbase_ave = cal_Qave(Qbase, Qbase_ave, cellxmax, cellymax, cellzmax, nval)
             
             # output
-            if round(evalnum) % every_outnum == 0
+            if round(stepnum) % every_outnum == 0
                 println("\n")
-                println("nt_______________________________"*string(round(evalnum)))
-                output_result(evalnum, Qbase, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
-                output_ave(Qbase_ave, cellxmax, cellymax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite, icell)
+                println("nt_______________________________"*string(round(stepnum)))
+                output_result(stepnum, Qbase, cellxmax, cellymax, cellzmax, specific_heat_ratio, 
+                                out_file_front, out_ext, out_dir, Rd, nval, icell)
+                output_ave(Qbase_ave, cellxmax, cellymax, cellzmax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite, icell)
             end
             
             # Find out if the results were divergent
-            check_divrege(Qbase, cellxmax, cellymax, Rd, fwrite, icell)
+            check_divrege(Qbase, cellxmax, cellymax, cellzmax, Rd, fwrite, icell)
         end
     elseif time_integ == "2"
         # implicit
@@ -161,17 +143,19 @@ function main()
             
             # step number
             loop_ite += 1
-            evalnum = t + restartnum
+            stepnum = t + restartnum
             
             # write physical time 
             output_physicaltime(fwrite, t, dt)
             
             # copy
             for l in 1:nval
-                for j in 1:cellymax
-                    for i in 1:cellxmax
-                        Qbasen[i,j,l] = Qbase[i,j,l]
-                        Qbasem[i,j,l] = Qbase[i,j,l]
+                for k in 1:cellzmax
+                    for j in 1:cellymax
+                        for i in 1:cellxmax
+                            Qbasen[i,j,k,l] = Qbase[i,j,k,l]
+                            Qbasem[i,j,k,l] = Qbase[i,j,k,l]
+                        end
                     end
                 end
             end
@@ -213,19 +197,13 @@ function main()
                 
                 # RHS
                 RHS = setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume, icell)
-
-                #println(E_adv_hat[150,150,:])
-                #println(E_adv_hat[20,20,:])
-                #println(F_adv_hat[23,3,:])
-                #println(E_vis_hat[150,150,:])
-                #println(E_vis_hat[20,20,:])
-                #println(F_vis_hat[23,3,:])
-                
                 
                 # 粘性の更新
-                for i in 1:cellxmax
+                for k in 1:cellzmax
                     for j in 1:cellymax
-                        mu[i,j] = mu[i,j] + mut[i,j]
+                        for i in 1:cellxmax
+                            mu[i,j,k] = mu[i,j,k] + mut[i,j,k]
+                        end
                     end
                 end
 
@@ -250,9 +228,11 @@ function main()
                 while true
                     # copy delta_Q
                     for l in 1:nval
-                        for j in 1:cellymax
-                            for i in 1:cellxmax
-                                delta_Q_temp[i,j,l] = delta_Q[i,j,l]
+                        for k in 1:cellzmax
+                            for j in 1:cellymax
+                                for i in 1:cellxmax
+                                    delta_Q_temp[i,j,k,l] = delta_Q[i,j,k,l]
+                                end
                             end
                         end
                     end
@@ -289,9 +269,11 @@ function main()
                 
                 # Updating
                 for l in 1:nval
-                    for j in 2:cellymax-1
-                        for i in 2:cellxmax-1
-                            Qcon_hat[i,j,l] = Qcon_hat[i,j,l] + delta_Q[i,j,l]
+                    for k in 1+icell:cellzmax-icell
+                        for j in 1+icell:cellymax-icell
+                            for i in 1+icell:cellxmax-icell
+                                Qcon_hat[i,j,k,l] = Qcon_hat[i,j,k,l] + delta_Q[i,j,k,l]
+                            end
                         end
                     end
                 end
@@ -308,18 +290,20 @@ function main()
 
             # Updating in physical time
             for l in 1:nval
-                for j in 1:cellymax
-                    for i in 1:cellxmax
-                        Qbase[i,j,l] = Qbasem[i,j,l]
+                for k in 1:cellzmax
+                    for j in 1:cellymax
+                        for i in 1:cellxmax
+                            Qbase[i,j,k,l] = Qbasem[i,j,k,l]
+                        end
                     end
                 end
             end
             
             # output
-            if round(evalnum) % every_outnum == 0
+            if round(stepnum) % every_outnum == 0
                 println("\n")
-                println("nt_______________________________"*string(round(evalnum)))
-                output_result(evalnum, Qbase, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+                println("nt_______________________________"*string(round(stepnum)))
+                output_result(stepnum, Qbase, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
                 output_ave(Qbase_ave, cellxmax, cellymax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite, icell)
             end
 
@@ -332,7 +316,7 @@ function main()
     end_t = now()
 
     # output of calculation time
-    output_fin(fwrite, start_t, end_t, nt, dt, in_nt, cellxmax, cellymax)
+    output_fin(fwrite, start_t, end_t, nt, dt, in_nt, cellxmax, cellymax, cellzmax)
 end
 
 

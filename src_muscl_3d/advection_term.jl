@@ -164,9 +164,9 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 vA[2] = tvA[2] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 vA[3] = tvA[3] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
-                rhoF = QbaseF[i,j,k,1]
-                UF = QbaseF[i,j,k,2]*vA[1] + QbaseF[i,j,k,3]*vA[2] + QbaseF[i,j,k,4]*vA[3]
-                pF = QbaseF[i,j,k,5]
+                rhoB = QbaseB[i,j,k,1]
+                UB = QbaseB[i,j,k,2]*vA[1] + QbaseB[i,j,k,3]*vA[2] + QbaseB[i,j,k,4]*vA[3]
+                pB = QbaseB[i,j,k,5]
                 
                 # k cell
                 # 規格化
@@ -177,19 +177,19 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 vA[2] = tvA[2] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 vA[3] = tvA[3] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
-                rhoB = QbaseB[i,j,k,1]
-                UB = QbaseB[i,j,k,2]*vA[1] + QbaseB[i,j,k,3]*vA[2] + QbaseB[i,j,k,4]*vA[3]
-                pB = QbaseB[i,j,k,5]              
+                rhoF = QbaseF[i,j,k,1]
+                UF = QbaseF[i,j,k,2]*vA[1] + QbaseF[i,j,k,3]*vA[2] + QbaseF[i,j,k,4]*vA[3]
+                pF = QbaseF[i,j,k,5]              
                 
                 # scheme
                 if  ad_scheme == 1
-                    mdot, ph = AUSM_plus_half(rhoF, rhoB, UF, UB, pF, pB, g, i, j)
+                    mdot, ph = AUSM_plus_half(rhoB, rhoF, UB, UF, pB, pF, g, i, j)
                 elseif ad_scheme == 2
-                    mdot, ph = AUSM_plusup_half(rhoF, rhoB, UF, UB, pF, pB, Minf, g, i, j)
+                    mdot, ph = AUSM_plusup_half(rhoB, rhoF, UB, UF, pB, pF, Minf, g, i, j)
                 elseif ad_scheme == 4
                     velocity = (0.5 * (QbaseF[i,j,k,2]^2 + QbaseF[i,j,k,3]^2 + QbaseF[i,j,k,4]^2 
                                         + QbaseB[i,j,k,2]^2 + QbaseB[i,j,k,3]^2 + QbaseB[i,j,k,4]^2))^0.5
-                    mdot, ph = SLAU_half(rhoF, rhoB, UF, UB, pF, pB, velocity, g)
+                    mdot, ph = SLAU_half(rhoB, rhoF, UB, UF, pB, pF, velocity, g)
                 end
                 
                 # flux half
@@ -199,11 +199,11 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 temp_vec[4] = vecAz[i,j,k,3] / sqAz
 
                 for l in 1:nval
-                    Lpsi[l] = QconF[i,j,k,l] / QconF[i,j,k,1]
-                    Rpsi[l] = QconB[i,j,k,l] / QconB[i,j,k,1]
+                    Lpsi[l] = QconB[i,j,k,l] / QconB[i,j,k,1]
+                    Rpsi[l] = QconF[i,j,k,l] / QconF[i,j,k,1]
                 end
-                Lpsi[5] = (QconF[i,j,k,5] + QbaseF[i,j,k,5]) / QconF[i,j,k,1]
-                Rpsi[5] = (QconB[i,j,k,5] + QbaseB[i,j,k,5]) / QconB[i,j,k,1]
+                Lpsi[5] = (QconB[i,j,k,5] + QbaseB[i,j,k,5]) / QconB[i,j,k,1]
+                Rpsi[5] = (QconF[i,j,k,5] + QbaseF[i,j,k,5]) / QconF[i,j,k,1]
 
                 if mdot > 0
                     for l in 1:nval

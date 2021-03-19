@@ -60,88 +60,169 @@ function set_dx_lts(dx, dy, dz, nodes, cellxmax, cellymax, cellzmax, icell)
     # define at cell boundaries
     # dx = zeros(cellxmax+1, cellymax)
     # dy = zeros(cellxmax, cellymax+1)
+
+    point = zeros(3,3)
     
     for k in 1+icell:cellzmax -icell
         for j in 1+icell:cellymax -icell
             for i in 1+icell:cellxmax+1 -icell
-                x1 = nodes[i,j,k,1]
-                y1 = nodes[i,j,k,2]
-                z1 = nodes[i,j,k,3]
-                x2 = nodes[i,j+1,k,1]
-                y2 = nodes[i,j+1,k,2]
-                z2 = nodes[i,j+1,k,3]
-                
-                if (x2 - x1) == 0.0
-                    a = 0.0
-                    b  = y1 - a*x1
-                else
-                    a = (y2-y1) / (x2-x1)
-                    b = y1 - a*x1
+                #= 点と直線の距離
+                   ax+by+cz+d = 0
+                   A(x0, y0, z0)
+                   => D = abs(ax0 + by0 + cz0 + d) / abs(a^2 + b^2 + c^2)
+                =#
+                for l in 1:3
+                    point[1,l] = nodes[i,  j,  k,l]
+                    point[2,l] = nodes[i,j+1,  k,l]
+                    point[3,l] = nodes[i,  j,k+1,l]
                 end
 
-                ccx = 0.125 * (nodes[i,j,1] + nodes[i+1,j,1] + nodes[i,j+1,1] + nodes[i+1,j+1,1])
-                ccy = 0.125 * (nodes[i,j,2] + nodes[i+1,j,2] + nodes[i,j+1,2] + nodes[i+1,j+1,2])
-                
-                dx1 = 0.0
-                if a == 0.0
-                    dx1 = abs(ccx - b)
-                else
-                    dx1 = abs(-a*ccx + ccy -b)/abs(a)
-                end
+                a,b,c,d = dis_point_plane(point)
 
-                ccx = 0.125 * (nodes[i-1,j,1] + nodes[i,j,1] + nodes[i-1,j+1,1] + nodes[i,j+1,1])
-                ccy = 0.125 * (nodes[i-1,j,2] + nodes[i,j,2] + nodes[i-1,j+1,2] + nodes[i,j+1,2])
+                ccx = 0.125 * (nodes[i,  j,  k,1] + nodes[i+1,  j,  k,1] +
+                               nodes[i,j+1,  k,1] + nodes[i+1,j+1,  k,1] +
+                               nodes[i,  j,k+1,1] + nodes[i+1,  j,k+1,1] )
+                ccy = 0.125 * (nodes[i,  j,  k,2] + nodes[i+1,  j,  k,2] +
+                               nodes[i,j+1,  k,2] + nodes[i+1,j+1,  k,2] +
+                               nodes[i,  j,k+1,2] + nodes[i+1,  j,k+1,2] )
+                ccz = 0.125 * (nodes[i,  j,  k,3] + nodes[i+1,  j,  k,3] +
+                               nodes[i,j+1,  k,3] + nodes[i+1,j+1,  k,3] +
+                               nodes[i,  j,k+1,3] + nodes[i+1,  j,k+1,3] )
+
+                dx1 = abs(a*ccx + b*ccy + c*ccz + d) / (a^2 + b^2 + c^2)^0.5
+
+                ccx = 0.125 * (nodes[i,  j,  k,1] + nodes[i-1,  j,  k,1] +
+                               nodes[i,j+1,  k,1] + nodes[i-1,j+1,  k,1] +
+                               nodes[i,  j,k+1,1] + nodes[i-1,  j,k+1,1] )
+                ccy = 0.125 * (nodes[i,  j,  k,2] + nodes[i-1,  j,  k,2] +
+                               nodes[i,j+1,  k,2] + nodes[i-1,j+1,  k,2] +
+                               nodes[i,  j,k+1,2] + nodes[i-1,  j,k+1,2] )
+                ccz = 0.125 * (nodes[i,  j,  k,3] + nodes[i-1,  j,  k,3] +
+                               nodes[i,j+1,  k,3] + nodes[i-1,j+1,  k,3] +
+                               nodes[i,  j,k+1,3] + nodes[i-1,  j,k+1,3] )
                 
-                dx2 = 0.0
-                if a == 0.0
-                    dx2 = abs(ccx - b)
-                else
-                    dx2 = abs(-a*ccx + ccy -b)/abs(a)
-                end
-                dx[i,j] = 0.5 * (dx1+dx2)
+                dx2 = abs(a*ccx + b*ccy + c*ccz + d) / (a^2 + b^2 + c^2)^0.5
+                
+                dx[i,j,k] = dx1 + dx2
             end
         end
     end
 
-    for j in 1+icell:cellymax+1 -icell
-        for i in 1+icell:cellxmax -icell      
-            x1 = nodes[i,j,1]
-            y1 = nodes[i,j,2]
-            x2 = nodes[i+1,j,1]
-            y2 = nodes[i+1,j,2]
-            
-            if (x2 - x1) == 0.0
-                a = 0.0
-                b  = y1 - a*x1
-            else
-                a  = (y2-y1) / (x2-x1)
-                b  = y1 - a*x1
-            end
+    for k in 1+icell:cellzmax -icell
+        for j in 1+icell:cellymax+1 -icell
+            for i in 1+icell:cellxmax -icell
+                for l in 1:3
+                    point[1,l] = nodes[  i,  j,  k,l]
+                    point[2,l] = nodes[i+1,  j,  k,l]
+                    point[3,l] = nodes[  i,  j,k+1,l]
+                end
 
-            ccx = 0.125 * (nodes[i,j,1] + nodes[i+1,j,1] + nodes[i,j+1,1] + nodes[i+1,j+1,1])
-            ccy = 0.125 * (nodes[i,j,2] + nodes[i+1,j,2] + nodes[i,j+1,2] + nodes[i+1,j+1,2])
-            
-            dy1 = 0.0
-            if a == 0.0
-                dy1 = abs(ccy - b)
-            else
-                dy1 = abs(-a*ccx + ccy -b)/abs(a)
-            end
+                a,b,c,d = dis_point_plane(point)
 
-            ccx = 0.125 * (nodes[i,j,1] + nodes[i+1,j,1] + nodes[i,j-1,1] + nodes[i+1,j-1,1])
-            ccy = 0.125 * (nodes[i,j,2] + nodes[i+1,j,2] + nodes[i,j-1,2] + nodes[i+1,j-1,2])
-            
-            dy2 = 0.0
-            if a == 0.0
-                dy2 = abs(ccy - b)
-            else
-                dy2 = abs(-a*ccx + ccy -b)/abs(a)
+                ccx = 0.125 * (nodes[i,  j,  k,1] + nodes[  i,j+1,  k,1] +
+                               nodes[i+1,j,  k,1] + nodes[i+1,j+1,  k,1] +
+                               nodes[i,  j,k+1,1] + nodes[  i,j+1,k+1,1] )
+                ccy = 0.125 * (nodes[i,  j,  k,2] + nodes[  i,j+1,  k,2] +
+                               nodes[i+1,j,  k,2] + nodes[i+1,j+1,  k,2] +
+                               nodes[i,  j,k+1,2] + nodes[  i,j+1,k+1,2] )
+                ccz = 0.125 * (nodes[i,  j,  k,3] + nodes[  i,j+1,  k,3] +
+                               nodes[i+1,j,  k,3] + nodes[i+1,j+1,  k,3] +
+                               nodes[i,  j,k+1,3] + nodes[  i,j+1,k+1,3] )
+
+                dx1 = abs(a*ccx + b*ccy + c*ccz + d) / (a^2 + b^2 + c^2)^0.5
+
+                ccx = 0.125 * (nodes[i,  j,  k,1] + nodes[  i,j-1,  k,1] +
+                               nodes[i+1,j,  k,1] + nodes[i+1,j-1,  k,1] +
+                               nodes[i,  j,k+1,1] + nodes[  i,j-1,k+1,1] )
+                ccy = 0.125 * (nodes[i,  j,  k,2] + nodes[  i,j-1,  k,2] +
+                               nodes[i+1,j,  k,2] + nodes[i+1,j-1,  k,2] +
+                               nodes[i,  j,k+1,2] + nodes[  i,j-1,k+1,2] )
+                ccz = 0.125 * (nodes[i,  j,  k,3] + nodes[  i,j-1,  k,3] +
+                               nodes[i+1,j,  k,3] + nodes[i+1,j-1,  k,3] +
+                               nodes[i,  j,k+1,3] + nodes[  i,j-1,k+1,3] )
+                
+                dx2 = abs(a*ccx + b*ccy + c*ccz + d) / (a^2 + b^2 + c^2)^0.5
+                
+                dy[i,j,k] = dx1 + dx2
             end
-            dy[i,j] = 0.5 * (dy1+dy2)
         end
     end
 
-    return dx, dy
+    for k in 1+icell:cellzmax+1 -icell
+        for j in 1+icell:cellymax -icell
+            for i in 1+icell:cellxmax -icell
+                for l in 1:3
+                    point[1,l] = nodes[  i,  j,  k,l]
+                    point[2,l] = nodes[i+1,  j,  k,l]
+                    point[3,l] = nodes[  i,j+1,  k,l]
+                end
+
+                a,b,c,d = dis_point_plane(point)
+
+                ccx = 0.125 * (nodes[i,    j,  k,1] + nodes[  i,  j,k+1,1] +
+                               nodes[i+1,  j,  k,1] + nodes[i+1,  j,k+1,1] +
+                               nodes[  i,j+1,  k,1] + nodes[  i,j+1,k+1,1] )
+                ccy = 0.125 * (nodes[i,    j,  k,2] + nodes[  i,  j,k+1,2] +
+                               nodes[i+1,  j,  k,2] + nodes[i+1,  j,k+1,2] +
+                               nodes[  i,j+1,  k,2] + nodes[  i,j+1,k+1,2] )
+                ccz = 0.125 * (nodes[i,    j,  k,3] + nodes[  i,  j,k+1,3] +
+                               nodes[i+1,  j,  k,3] + nodes[i+1,  j,k+1,3] +
+                               nodes[  i,j+1,  k,3] + nodes[  i,j+1,k+1,3] )
+
+                dx1 = abs(a*ccx + b*ccy + c*ccz + d) / (a^2 + b^2 + c^2)^0.5
+
+                ccx = 0.125 * (nodes[i,    j,  k,1] + nodes[  i,  j,k-1,1] +
+                               nodes[i+1,  j,  k,1] + nodes[i+1,  j,k-1,1] +
+                               nodes[  i,j+1,  k,1] + nodes[  i,j+1,k-1,1] )
+                ccy = 0.125 * (nodes[i,    j,  k,2] + nodes[  i,  j,k-1,2] +
+                               nodes[i+1,  j,  k,2] + nodes[i+1,  j,k-1,2] +
+                               nodes[  i,j+1,  k,2] + nodes[  i,j+1,k-1,2] )
+                ccz = 0.125 * (nodes[i,    j,  k,3] + nodes[  i,  j,k-1,3] +
+                               nodes[i+1,  j,  k,3] + nodes[i+1,  j,k-1,3] +
+                               nodes[  i,j+1,  k,3] + nodes[  i,j+1,k-1,3] )
+                
+                dx2 = abs(a*ccx + b*ccy + c*ccz + d) / (a^2 + b^2 + c^2)^0.5
+                
+                dz[i,j,k] = dx1 + dx2
+            end
+        end
+    end
+
+    return dx, dy, dz
+end
+
+
+# ------------------------------------
+# Distance between point and plane
+# ------------------------------------
+function dis_point_plane(point)
+    #= 点と直線の距離
+        ax+by+cz+d = 0
+        A(x0, y0, z0)
+        => D = abs(ax0 + by0 + cz0 + d) / abs(a^2 + b^2 + c^2)
+
+        平面に対する法線ベクトル:vec{n} = (p, q, r)
+        p(x−x0) + q(y−y0) + r(z−z0) = 0
+
+        法線ベクトルは外積から求める。
+    =#
+    a1 = point[2,1] - point[1,1]
+    a2 = point[2,2] - point[1,2]
+    a3 = point[2,3] - point[1,3]
+    b1 = point[3,1] - point[1,1]
+    b2 = point[3,2] - point[1,2]
+    b3 = point[3,3] - point[1,3]
+
+    p = a2*b3 - a3*b2
+    q = a3*b1 - a1*b3
+    r = a1*b2 - a2*b1
+
+    a = p
+    b = q
+    c = r
+    d = -p*point[1,1] - q*point[1,2] - r*point[1,3]
+
+    return a, b, c, d
 end
 
 # ------------------------------------

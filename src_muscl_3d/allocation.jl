@@ -35,11 +35,6 @@ function common_allocation(cellxmax, cellymax, cellzmax, nval)
     mut_bd = zeros(cellxmax+1, cellymax+1, cellzmax+1, 3)        # turb viscosity on bd
 
     RHS = zeros(cellxmax, cellymax, cellzmax, nval)              # right hand side
-    
-    # define at cell boundaries
-    dx = zeros(cellxmax+1, cellymax, cellzmax)                   # distance from cell center
-    dy = zeros(cellxmax, cellymax+1, cellzmax)                   # distance from cell center
-    dz = zeros(cellxmax, cellymax, cellzmax+1)                   # distance from cell center
 
     E_adv_hat = zeros(cellxmax+1,   cellymax,   cellzmax, nval)    # flux of advection in the x-direction
     F_adv_hat = zeros(  cellxmax, cellymax+1,   cellzmax, nval)    # flux of advection in the y-direction
@@ -49,7 +44,7 @@ function common_allocation(cellxmax, cellymax, cellzmax, nval)
     F_vis_hat = zeros(  cellxmax, cellymax+1,   cellzmax, nval)    # flux of viscosity in the y-direction
     G_vis_hat = zeros(  cellxmax,   cellymax, cellzmax+1, nval)    # flux of viscosity in the z-direction
 
-    return Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, dz, Qcon, Qcon_hat, mu, mut, mut_bd, lambda, 
+    return Qbase, Qbase_ave, volume, cellcenter, wally, yplus, Qcon, Qcon_hat, mu, mut, mut_bd, lambda, 
             E_adv_hat, F_adv_hat, G_adv_hat, E_vis_hat, F_vis_hat, G_vis_hat, RHS, QbaseU, QbaseD, QbaseL, QbaseR, QbaseF, QbaseB,
             QconU, QconD, QconL, QconR, QconF, QconB
             
@@ -100,6 +95,11 @@ function allocation_implicit(cellxmax, cellymax, cellzmax, nval)
     lambda_facey = zeros(cellxmax, cellymax+1, cellzmax)          # lambda for computational time steps
     lambda_facez = zeros(cellxmax, cellymax, cellzmax+1)          # lambda for computational time steps
 
+    # define at cell boundaries
+    dx = zeros(cellxmax+1, cellymax, cellzmax)                   # distance from cell center
+    dy = zeros(cellxmax, cellymax+1, cellzmax)                   # distance from cell center
+    dz = zeros(cellxmax, cellymax, cellzmax+1)                   # distance from cell center
+
     # misc
     norm2 = zeros(nval)                                 # Residuals by norm-2
     I = zeros(nval, nval)                               # identity matrix
@@ -107,7 +107,7 @@ function allocation_implicit(cellxmax, cellymax, cellzmax, nval)
         I[l,l] = 1.0
     end
 
-    return Qbasen, Qconn, Qconn_hat, Qbasem, dtau, lambda_facex, lambda_facey, lambda_facez,
+    return Qbasen, Qconn, Qconn_hat, Qbasem, dtau, lambda_facex, lambda_facey, lambda_facez, dx, dy, dz,
             A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, C_adv_hat_p, C_adv_hat_m, A_beta_shig, B_beta_shig, C_beta_shig,
             jalphaP, jbetaP, jgammaP, delta_Q, delta_Q_temp, D, Lx, Ly, Lz, Ux, Uy, Uz, LdQ, UdQ, RHS_temp, res,
             norm2, I

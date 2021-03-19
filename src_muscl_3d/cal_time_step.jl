@@ -176,7 +176,7 @@ end
 # ------------------------------------
 function lusgs(D, Lx, Ly, Lz, Ux, Uy, Uz, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qconn_hat, delta_Q,
                 A_adv_hat_p, A_adv_hat_m, B_adv_hat_p, B_adv_hat_m, C_adv_hat_p, C_adv_hat_m, A_beta_shig, B_beta_shig, C_beta_shig,
-                jalphaP, jbetaP, jgammaP, RHS, cellxmax, cellymax, volume, nval, icell)
+                jalphaP, jbetaP, jgammaP, RHS, cellxmax, cellymax, cellzmax, volume, nval, icell)
        
     # calculate L and U
     for m in 1:nval
@@ -217,8 +217,7 @@ function lusgs(D, Lx, Ly, Lz, Ux, Uy, Uz, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_
     for k in 1+icell:cellzmax-icell
         for j in 1+icell:cellymax-icell
             for i in 1+icell:cellxmax-icell
-                D[i,j,k] = dt/dtau[i,j,k] + 1.0 
-                         + dt*(A_beta_shig[i,j,k]+2*jalphaP[i,j,k] + B_beta_shig[i,j,k]+2*jbetaP[i,j,k] + C_beta_shig[i,j,k]+2*jgammaP[i,j,k])
+                D[i,j,k] = dt/dtau[i,j,k] + 1.0 + dt*(A_beta_shig[i,j,k]+2*jalphaP[i,j,k] + B_beta_shig[i,j,k]+2*jbetaP[i,j,k] + C_beta_shig[i,j,k]+2*jgammaP[i,j,k])
             end
         end
     end

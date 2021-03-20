@@ -209,7 +209,7 @@ function cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, cell
 				tvA[3] = tvA[3] / sqA
 
 				nu = mu[i,j,k] / Qbase[i,j,k,1]
-				u = (tvA[1]*Qbase[i,j,k,2] + tvA[2]*Qbase[i,j,k,3] + tvA[3]*Qbase[i,j,k,4])^0.5
+				u = tvA[1]*Qbase[i,j,k,2] + tvA[2]*Qbase[i,j,k,3] + tvA[3]*Qbase[i,j,k,4]
 				ubar = (Qbase[i,j,k,2]^2 + Qbase[i,j,k,3]^2 + Qbase[i,j,k,4]^2 - u^2)^0.5
 				yplus[i,j,k], up = cal_wall_val_spalding(ubar, wally[i,j,k], nu)
 			end

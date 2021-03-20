@@ -452,7 +452,7 @@ function bd_z_m(Qbase, cellxmax, cellymax, cellzmax, vecAx, vecAy, vecAz, bdcon,
         throw(UndefVarError(:x))
     end
 
-    if Int(bdcon[1][1]) != 4
+    if Int(bdcon[5][1]) != 4
         for l in 1:nval
             for k in 1:icell-1
                 for j in 1:cellymax

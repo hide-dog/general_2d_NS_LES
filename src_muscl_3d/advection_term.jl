@@ -26,8 +26,8 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 tvA[2] = 0.5*(vecAx[i-1,j,k,2] + vecAx[i,j,k,2])
                 tvA[3] = 0.5*(vecAx[i-1,j,k,3] + vecAx[i,j,k,3])
                 vA[1] = tvA[1] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[2] = tvA[2] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[3] = tvA[3] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[2] = tvA[2] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[3] = tvA[3] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
                 rhoL = QbaseL[i,j,k,1]
                 UL = QbaseL[i,j,k,2]*vA[1] + QbaseL[i,j,k,3]*vA[2] + QbaseL[i,j,k,4]*vA[3]
@@ -39,8 +39,8 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 tvA[2] = 0.5*(vecAx[i,j,k,2] + vecAx[i+1,j,k,2])
                 tvA[3] = 0.5*(vecAx[i,j,k,3] + vecAx[i+1,j,k,3])
                 vA[1] = tvA[1] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[2] = tvA[2] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[3] = tvA[3] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[2] = tvA[2] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[3] = tvA[3] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
                 rhoR = QbaseR[i,j,k,1]
                 UR = QbaseR[i,j,k,2]*vA[1] + QbaseR[i,j,k,3]*vA[2] + QbaseR[i,j,k,4]*vA[3]
@@ -78,7 +78,19 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                     for l in 1:nval
                         E_adv_hat[i,j,k,l] = (mdot * Rpsi[l] + ph * temp_vec[l]) * sqAx
                     end
-                end            
+                end    
+                #=        
+                if i==10 && j ==10 && k==5
+                    println(" E ")
+                    println(mdot)
+                    println(rhoL)
+                    println(UL)
+                    println(pL)
+                    println(rhoR)
+                    println(UR)
+                    println(pR)
+                end
+                =#
             end
         end
     end
@@ -94,8 +106,8 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 tvA[2] = 0.5*(vecAy[i,j-1,k,2] + vecAy[i,j,k,2])
                 tvA[3] = 0.5*(vecAy[i,j-1,k,3] + vecAy[i,j,k,3])
                 vA[1] = tvA[1] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[2] = tvA[2] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[3] = tvA[3] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[2] = tvA[2] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[3] = tvA[3] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
                 rhoD = QbaseD[i,j,k,1]
                 VD = QbaseD[i,j,k,2]*vA[1] + QbaseD[i,j,k,3]*vA[2] + QbaseD[i,j,k,4]*vA[3]
@@ -106,8 +118,8 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 tvA[2] = 0.5*(vecAy[i,j,k,2] + vecAy[i,j+1,k,2])
                 tvA[3] = 0.5*(vecAy[i,j,k,3] + vecAy[i,j+1,k,3])
                 vA[1] = tvA[1] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[2] = tvA[2] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[3] = tvA[3] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[2] = tvA[2] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[3] = tvA[3] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
                 rhoU = QbaseU[i,j,k,1]
                 VU = QbaseU[i,j,k,2]*vA[1] + QbaseU[i,j,k,3]*vA[2] + QbaseU[i,j,k,4]*vA[3]
@@ -146,6 +158,29 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                         F_adv_hat[i,j,k,l] = (mdot * Rpsi[l] + ph * temp_vec[l]) * sqAy
                     end
                 end
+                #=
+                if i==10 && j ==10 && k==5
+                    println(" F ")
+                    println(mdot)
+                    println(rhoD)
+                    println(VD)
+                    println(pD)
+                    println(rhoU)
+                    println(VU)
+                    println(pU)
+                end
+                =#
+                #=
+                if isequal(vA[3], NaN) == true
+                    println("  ")
+                    println(i)
+                    println(j)
+                    println(k)
+                    println(tvA)
+                    println(vecAy[i,j,k,:])
+                    println(vecAy[i,j+1,k,:])
+                end
+                =#
             end
         end
     end
@@ -161,8 +196,8 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 tvA[2] = 0.5*(vecAz[i,j,k-1,2] + vecAz[i,j,k,2])
                 tvA[3] = 0.5*(vecAz[i,j,k-1,3] + vecAz[i,j,k,3])
                 vA[1] = tvA[1] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[2] = tvA[2] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[3] = tvA[3] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[2] = tvA[2] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[3] = tvA[3] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
                 rhoB = QbaseB[i,j,k,1]
                 UB = QbaseB[i,j,k,2]*vA[1] + QbaseB[i,j,k,3]*vA[2] + QbaseB[i,j,k,4]*vA[3]
@@ -174,8 +209,8 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 tvA[2] = 0.5*(vecAz[i,j,k,2] + vecAz[i,j,k+1,2])
                 tvA[3] = 0.5*(vecAz[i,j,k,3] + vecAz[i,j,k+1,3])
                 vA[1] = tvA[1] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[2] = tvA[2] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
-                vA[3] = tvA[3] / (tvA[2]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[2] = tvA[2] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
+                vA[3] = tvA[3] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
                 rhoF = QbaseF[i,j,k,1]
                 UF = QbaseF[i,j,k,2]*vA[1] + QbaseF[i,j,k,3]*vA[2] + QbaseF[i,j,k,4]*vA[3]
@@ -213,7 +248,13 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                     for l in 1:nval
                         G_adv_hat[i,j,k,l] = (mdot * Rpsi[l] + ph * temp_vec[l]) * sqAz
                     end
-                end            
+                end
+                #=
+                if i==10 && j ==10 && k==5
+                    println("  ")
+                    println(mdot)
+                end
+                =#
             end
         end
     end

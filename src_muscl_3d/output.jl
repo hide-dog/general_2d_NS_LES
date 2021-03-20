@@ -68,19 +68,19 @@ end
 # ------------------------------------
 # output ave results
 # ------------------------------------
-function output_ave(Qbase_ave, cellxmax, cellymax, cellzmax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite, icell)
+function output_ave(Qbase_ave, cellxmax, cellymax, cellzmax, out_file_front, out_ext, out_dir, Rd, nval, icell)
 
-    fff = out_dir*"/"*out_file_front*"average"*out_ext
+    fff = out_dir*"/"*out_file_front*"_average"*out_ext
     open(fff,"w") do f
         write(f,"result:rho[kg/m^3], u[m/s], v[m/s], w[m/s], p[Pa], T[K]\n")
         for i in 1+icell:cellxmax-icell
             for j in 1+icell:cellymax-icell
                 for k in 1+icell:cellzmax-icell
                     for l in 1:nval
-                        a = @sprintf("%8.8e", Qbase_ave[i,j,k,l] / loop_ite)
+                        a = @sprintf("%8.8e", Qbase_ave[i,j,k,l])
                         write(f, a*" ")
                     end
-                    T = Qbase_ave[i,j,k,5]/(Qbase_ave[i,j,k,1]*Rd) / loop_ite
+                    T = Qbase_ave[i,j,k,5]/(Qbase_ave[i,j,k,1]*Rd)
                     a = @sprintf("%8.8e", T)
                     write(f, a*"\n")
                 end

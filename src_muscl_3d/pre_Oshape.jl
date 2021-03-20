@@ -4,7 +4,7 @@ function main()
 
     infile = "xy_hayabusa"
     znum = 5
-    dz = 1e-1
+    dz = 2.0e-2
 
     xnum, ynum, x, y = read_wing(infile)
 
@@ -117,7 +117,7 @@ function mk_gird(xnum, ynum, znum, x, y, dz, outdir)
 
     fff = outdir*"/nodes"
     open(fff,"w") do f
-        write(f,"nodes: xnum, ynum , x, y\n")
+        write(f,"nodes: xnum, ynum, znum, x, y, z\n")
         for i in 1:xnum_max
             for j in 1:ynum_max
                 for k in 1:znum_max

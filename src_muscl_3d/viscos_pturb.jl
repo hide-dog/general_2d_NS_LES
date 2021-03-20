@@ -100,7 +100,8 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                     Smagorinsky_model(dudx, dudy, dudz, dvdx, dvdy, dvdz, dwdx, dwdy, dwdz, dTdx, dTdy, dTdz,
                                     rho_av, u_av, v_av, w_av, volume_av, yplus_av, i, j)
                     
-                    #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,k,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    #tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
+                    #e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
                 #=    
                     if i == 51 && j ==3
@@ -151,7 +152,7 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                 E_vis_hat[i,j,k,3] = ((vecAx[i,j,k,1]*sigma_xy + vecAx[i,j,k,2]*sigma_yy + vecAx[i,j,k,3]*sigma_yz) - 
                                       (vecAx[i,j,k,1]*tau_xy   + vecAx[i,j,k,2]*tau_yy   + vecAx[i,j,k,3]*tau_yz)) / volume_av
                 E_vis_hat[i,j,k,4] = ((vecAx[i,j,k,1]*sigma_xz + vecAx[i,j,k,2]*sigma_yz + vecAx[i,j,k,3]*sigma_zz) -
-                                      (vecAx[i,j,k,1]*tau_xy   + vecAx[i,j,k,2]*tau_yy   + vecAx[i,j,k,3]*tau_zz)) / volume_av
+                                      (vecAx[i,j,k,1]*tau_xz   + vecAx[i,j,k,2]*tau_yz   + vecAx[i,j,k,3]*tau_zz)) / volume_av
                 E_vis_hat[i,j,k,5] = ((vecAx[i,j,k,1]*betax    + vecAx[i,j,k,2]*betay    + vecAx[i,j,k,3]*betaz) -
                                       (vecAx[i,j,k,1]*e_sgs_x  + vecAx[i,j,k,2]*e_sgs_y  + vecAx[i,j,k,3]*e_sgs_z))/ volume_av
             end
@@ -260,7 +261,7 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                 F_vis_hat[i,j,k,3] = ((vecAy[i,j,k,1]*sigma_xy + vecAy[i,j,k,2]*sigma_yy + vecAy[i,j,k,3]*sigma_yz) - 
                                       (vecAy[i,j,k,1]*tau_xy   + vecAy[i,j,k,2]*tau_yy   + vecAy[i,j,k,3]*tau_yz)) / volume_av
                 F_vis_hat[i,j,k,4] = ((vecAy[i,j,k,1]*sigma_xz + vecAy[i,j,k,2]*sigma_yz + vecAy[i,j,k,3]*sigma_zz) -
-                                      (vecAy[i,j,k,1]*tau_xy   + vecAy[i,j,k,2]*tau_yy   + vecAy[i,j,k,3]*tau_zz)) / volume_av
+                                      (vecAy[i,j,k,1]*tau_xz   + vecAy[i,j,k,2]*tau_yz   + vecAy[i,j,k,3]*tau_zz)) / volume_av
                 F_vis_hat[i,j,k,5] = ((vecAy[i,j,k,1]*betax    + vecAy[i,j,k,2]*betay    + vecAy[i,j,k,3]*betaz) -
                                       (vecAy[i,j,k,1]*e_sgs_x  + vecAy[i,j,k,2]*e_sgs_y  + vecAy[i,j,k,3]*e_sgs_z))/ volume_av
             end
@@ -369,7 +370,7 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                 G_vis_hat[i,j,k,3] = ((vecAz[i,j,k,1]*sigma_xy + vecAz[i,j,k,2]*sigma_yy + vecAz[i,j,k,3]*sigma_yz) - 
                                       (vecAz[i,j,k,1]*tau_xy   + vecAz[i,j,k,2]*tau_yy   + vecAz[i,j,k,3]*tau_yz)) / volume_av
                 G_vis_hat[i,j,k,4] = ((vecAz[i,j,k,1]*sigma_xz + vecAz[i,j,k,2]*sigma_yz + vecAz[i,j,k,3]*sigma_zz) -
-                                      (vecAz[i,j,k,1]*tau_xy   + vecAz[i,j,k,2]*tau_yy   + vecAz[i,j,k,3]*tau_zz)) / volume_av
+                                      (vecAz[i,j,k,1]*tau_xz   + vecAz[i,j,k,2]*tau_yz   + vecAz[i,j,k,3]*tau_zz)) / volume_av
                 G_vis_hat[i,j,k,5] = ((vecAz[i,j,k,1]*betax    + vecAz[i,j,k,2]*betay    + vecAz[i,j,k,3]*betaz) -
                                       (vecAz[i,j,k,1]*e_sgs_x  + vecAz[i,j,k,2]*e_sgs_y  + vecAz[i,j,k,3]*e_sgs_z))/ volume_av
             end
@@ -491,6 +492,9 @@ function Smagorinsky_model(dudx, dudy, dudz, dvdx, dvdy, dvdz, dwdx, dwdy, dwdz,
         println(1/3 * Cl * 2 * rho_av * Delta^2 * absS^2)
     end
     =#
+
+    #tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, e_sgs_x, e_sgs_y, e_sgs_z, mu_sgs = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+
 
     return tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, e_sgs_x, e_sgs_y, e_sgs_z, mu_sgs
 end

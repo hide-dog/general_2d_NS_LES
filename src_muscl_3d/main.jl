@@ -44,6 +44,8 @@ function main()
     cellcenter = set_cellcenter(cellcenter, nodes, cellxmax, cellymax, cellzmax)
     reset_write(fwrite)
 
+    #println(volume[3,3,3])
+
     # wally
     wally, swith_wall = set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax, cellzmax, icell)
 
@@ -96,7 +98,7 @@ function main()
             E_adv_hat, F_adv_hat, G_adv_hat = AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, QbaseL, QbaseR, 
                                                 QconF, QconB, QconU, QconD, QconL, QconR, cellxmax, cellymax, cellzmax, 
                                                 vecAx, vecAy, vecAz, specific_heat_ratio, volume, nval, Minf, ad_scheme, icell)
-                        
+            
             # viscos_term
             E_vis_hat, F_vis_hat, G_vis_hat, mut = central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR, QbaseF, QbaseB, 
                                                             QconU, QconD, QconL, QconR, QconF, QconB, cellxmax, cellymax, cellzmax, mu, mut, mut_bd, lambda,
@@ -112,7 +114,7 @@ function main()
             # calculate primitive variables
             Qcon  = Qhat_to_Q(Qcon, Qcon_hat, cellxmax, cellymax, cellzmax, volume, nval)
             Qbase = conservative_to_base(Qbase, Qcon, cellxmax, cellymax, cellzmax, specific_heat_ratio)
-            Qbase_ave = cal_Qave(Qbase, Qbase_ave, cellxmax, cellymax, cellzmax, nval)
+            Qbase_ave = cal_Qave(Qbase, Qbase_ave, cellxmax, cellymax, cellzmax, nval, stepnum)
             
             # output
             if round(stepnum) % every_outnum == 0
@@ -120,7 +122,7 @@ function main()
                 println("nt_______________________________"*string(round(stepnum)))
                 output_result(stepnum, Qbase, cellxmax, cellymax, cellzmax, specific_heat_ratio, 
                                 out_file_front, out_ext, out_dir, Rd, nval, icell)
-                output_ave(Qbase_ave, cellxmax, cellymax, cellzmax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite, icell)
+                output_ave(Qbase_ave, cellxmax, cellymax, cellzmax, out_file_front, out_ext, out_dir, Rd, nval, icell)
             end
             
             # Find out if the results were divergent
@@ -172,6 +174,9 @@ function main()
                 bdcon, Rd, specific_heat_ratio, nval, icell)
                 Qcon     = base_to_conservative(Qbasem, Qcon, cellxmax, cellymax, cellzmax, specific_heat_ratio)
                 Qcon_hat = setup_Qcon_hat(Qcon, Qcon_hat, cellxmax, cellymax, cellzmax, volume, nval)
+                
+                #println("Qbasem")
+                #println(Qbasem[4,4,:,4])
 
                 # muscl
                 QbaseU, QbaseD, QbaseL, QbaseR, QbaseF, QbaseB, 
@@ -199,6 +204,8 @@ function main()
                 # RHS
                 RHS = setup_RHS(RHS, cellxmax, cellymax, cellzmax, E_adv_hat, F_adv_hat, G_adv_hat, 
                                 E_vis_hat, F_vis_hat, G_vis_hat, nval, volume, icell)
+
+                #println(RHS[10,10,:,:])
             
                 
                 # 粘性の更新
@@ -217,16 +224,40 @@ function main()
                 # lusgs_advection_term
                 A_adv_hat_p, A_adv_hat_m, B_adv_hat_p, B_adv_hat_m, C_adv_hat_p, C_adv_hat_m, 
                 A_beta_shig, B_beta_shig, C_beta_shig = one_wave(A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, C_adv_hat_m, C_adv_hat_p,
-                                                                A_beta_shig, B_beta_shig, C_beta_shig, I, Qbasem, Qcon, cellxmax, cellymax, cellzmax,
+                                                                A_beta_shig, B_beta_shig, C_beta_shig, I, Qbase, Qcon, cellxmax, cellymax, cellzmax,
                                                                 vecAx, vecAy, vecAz, specific_heat_ratio, volume, nval)
                 # lusgs_viscos_term
-                jalphaP, jbetaP, jgammaP = central_diff_jacobian(jalphaP, jbetaP, jgammaP, Qbasem, Qcon, cellxmax, cellymax, cellzmax, mu, lambda,
+                jalphaP, jbetaP, jgammaP = central_diff_jacobian(jalphaP, jbetaP, jgammaP, Qbase, Qcon, cellxmax, cellymax, cellzmax, mu, lambda,
                                                         vecAx, vecAy, vecAz, specific_heat_ratio, volume, nval)
 
-                #println(RHS[2,:,1])
-                #println(A_adv_hat_m[2,:,1])
-                #println(jalphaP[2,:])
-                
+                #println(RHS[:,:,6,:])
+                #println(A_adv_hat_m[4,2,:,:,:])
+                #println(dtau[4,4,:])
+                #=
+                println(E_adv_hat[10,10,5,:])
+                println(F_adv_hat[10,10,5,:])
+                println(G_adv_hat[10,10,5,:])
+                =#
+
+                #=
+
+                for l in 1:nval
+                    for k in 1+icell:cellzmax-icell
+                        for j in 1+icell:cellymax-icell
+                            for i in 1+icell:cellxmax-icell        
+                                #if isequal(RHS[i,j,k,l], NaN) == true
+                                if isequal(F_adv_hat[i,j,k,l], NaN) == true
+                                    println("  ")
+                                    println(i)
+                                    println(j)
+                                    println(k)
+                                end
+                            end
+                        end
+                    end
+                end
+                =#
+                    
                 # LUSGS
                 ite = 0
                 while true
@@ -240,11 +271,14 @@ function main()
                             end
                         end
                     end
+                    #println(delta_Q[4,4,:,:])
                                         
                     # Reversing the left-hand side by lusgs
                     delta_Q = lusgs(D, Lx, Ly, Lz, Ux, Uy, Uz, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qconn_hat, delta_Q,
                     A_adv_hat_p, A_adv_hat_m, B_adv_hat_p, B_adv_hat_m, C_adv_hat_p, C_adv_hat_m, A_beta_shig, B_beta_shig, C_beta_shig,
                     jalphaP, jbetaP, jgammaP, RHS, cellxmax, cellymax, cellzmax, volume, nval, icell)
+
+                    #println(delta_Q[:,:,:,:])
                     
                     # cal Residuals by norm-2
                     res   = set_res(res, delta_Q, delta_Q_temp, cellxmax, cellymax, cellzmax, nval, icell)
@@ -281,13 +315,19 @@ function main()
                         end
                     end
                 end
+                #println(Qbasem[4,4,:,4])
+
                 # calculate primitive variables
                 Qcon  = Qhat_to_Q(Qcon, Qcon_hat, cellxmax, cellymax, cellzmax, volume, nval)
-                Qbase = conservative_to_base(Qbasem, Qcon, cellxmax, cellymax, cellzmax, specific_heat_ratio)
-                Qbase_ave = cal_Qave(Qbasem, Qbase_ave, cellxmax, cellymax, cellzmax, nval)
+                Qbasem = conservative_to_base(Qbasem, Qcon, cellxmax, cellymax, cellzmax, specific_heat_ratio)
+
+                
+                # println(delta_Q[4,4,:,4])
+                #println(Qbasem[4,4,:,4])
+
                 
                 # Find out if the results were divergent
-                check_divrege(Qbase, cellxmax, cellymax, cellzmax, Rd, fwrite, icell)
+                check_divrege(Qbasem, cellxmax, cellymax, cellzmax, Rd, fwrite, icell)
             end
             # End of the inner iteration
 
@@ -301,6 +341,8 @@ function main()
                     end
                 end
             end
+
+            Qbase_ave = cal_Qave(Qbase_ave, Qbase, cellxmax, cellymax, cellzmax, nval, stepnum)
             
             # output
             if round(stepnum) % every_outnum == 0
@@ -308,7 +350,7 @@ function main()
                 println("nt_______________________________"*string(round(stepnum)))
                 output_result(stepnum, Qbase, cellxmax, cellymax, cellzmax, specific_heat_ratio, 
                                 out_file_front, out_ext, out_dir, Rd, nval, icell)
-                output_ave(Qbase_ave, cellxmax, cellymax, cellzmax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite, icell)
+                output_ave(Qbase_ave, cellxmax, cellymax, cellzmax, out_file_front, out_ext, out_dir, Rd, nval, icell)
             end
 
             # Find out if the results were divergent

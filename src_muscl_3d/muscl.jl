@@ -174,6 +174,16 @@ function muscl(Qbase, QbaseU, QbaseD, QbaseL, QbaseR, QbaseF, QbaseB, QconU, Qco
                     dip = 2*(Qbase[i,j+1,k,l] - Qbase[i,j,k,l])   / (li  + lip)
                     dim = 2*(Qbase[i,j,k,l]   - Qbase[i,j-1,k,l]) / (lim + li)
                     QbaseU[i,j,k,l] = Qbase[i,j,k,l]  - 0.5*li*minmod(dip, dim) 
+
+                    #=if isequal(QbaseD[i,j,k,l], NaN) == true
+                        println("  ")
+                        println(i)
+                        println(j)
+                        println(k)
+                        println(dip)
+                        println(dim)
+                    end
+                    =#
                 end
             end
         end

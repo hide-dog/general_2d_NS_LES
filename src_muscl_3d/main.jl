@@ -231,12 +231,14 @@ function main()
                                                         vecAx, vecAy, vecAz, specific_heat_ratio, volume, nval)
 
                 #println(RHS[:,:,6,:])
-                #println(A_adv_hat_m[4,2,:,:,:])
+                #println(A_adv_hat_m[10,10,10,:,:])
+                #println(B_adv_hat_m[10,10,10,:,:])
+                #println(C_adv_hat_m[10,10,10,:,:])
                 #println(dtau[4,4,:])
                 #=
-                println(E_adv_hat[10,10,5,:])
-                println(F_adv_hat[10,10,5,:])
-                println(G_adv_hat[10,10,5,:])
+                println(E_adv_hat[10,10,10,:])
+                println(F_adv_hat[10,10,10,:])
+                println(G_adv_hat[10,10,10,:])
                 =#
 
                 #=

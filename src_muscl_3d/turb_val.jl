@@ -105,76 +105,81 @@ function set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax, cellzmax
 	distance_list = zeros(nop, 3)
 	distance = 0
 
-	# 最大値を2つ抽出
-	for k in 1+icell:cellzmax-icell
-		for j in 1+icell:cellymax-icell
-			for i in 1+icell:cellxmax-icell
-				for n in 1:nop
-					distance = ((cellcenter[i,j,k,1]-wallpoint[n,1])^2 +
-								(cellcenter[i,j,k,2]-wallpoint[n,2])^2 +
-								(cellcenter[i,j,k,3]-wallpoint[n,3])^2
-								)^0.5
-					distance_list[n,1] = n
-					distance_list[n,2] = distance
-				end
+	if ite == 1
+		# pass
+	else
+		# 最大値を2つ抽出
+		for k in 1+icell:cellzmax-icell
+			for j in 1+icell:cellymax-icell
+				for i in 1+icell:cellxmax-icell
+					for n in 1:nop
+						distance = ((cellcenter[i,j,k,1]-wallpoint[n,1])^2 +
+									(cellcenter[i,j,k,2]-wallpoint[n,2])^2 +
+									(cellcenter[i,j,k,3]-wallpoint[n,3])^2
+									)^0.5
+						distance_list[n,1] = n
+						distance_list[n,2] = distance
+					end
 
-				qdistance_list = copy(distance_list)
-				qdistance_list = quicksort(qdistance_list,1,nop,2,2)
+					qdistance_list = copy(distance_list)
+					qdistance_list = quicksort(qdistance_list,1,nop,2,2)
 
-				# wall_point
-				point1 = Int(qdistance_list[1,1])
-				point2 = Int(qdistance_list[2,1])
-				
-				dis_bottom = ((wallpoint[point1, 1] - wallpoint[point2, 1])^2 +
-							  (wallpoint[point1, 2] - wallpoint[point2, 2])^2 +
-							  (wallpoint[point1, 3] - wallpoint[point2, 3])^2)^0.5
-				
-				# O型格子の関係で同じ点が二つあるため
-				if dis_bottom == 0.0
+					# wall_point
 					point1 = Int(qdistance_list[1,1])
-					point2 = Int(qdistance_list[3,1])
-				
+					point2 = Int(qdistance_list[2,1])
+					
 					dis_bottom = ((wallpoint[point1, 1] - wallpoint[point2, 1])^2 +
-				   			      (wallpoint[point1, 2] - wallpoint[point2, 2])^2 +
-							      (wallpoint[point1, 3] - wallpoint[point2, 3])^2)^0.5
+								(wallpoint[point1, 2] - wallpoint[point2, 2])^2 +
+								(wallpoint[point1, 3] - wallpoint[point2, 3])^2)^0.5
+					
+					# O型格子の関係で同じ点が二つあるため
+					if dis_bottom == 0.0
+						point1 = Int(qdistance_list[1,1])
+						point2 = Int(qdistance_list[3,1])
+					
+						dis_bottom = ((wallpoint[point1, 1] - wallpoint[point2, 1])^2 +
+									(wallpoint[point1, 2] - wallpoint[point2, 2])^2 +
+									(wallpoint[point1, 3] - wallpoint[point2, 3])^2)^0.5
+					end
+
+					dis1 = distance_list[point1, 2]
+					dis2 = distance_list[point2, 2]
+					
+					# ヘロンの公式から距離を算出
+					# 正確な平面への投影はしてないので、注意
+					s = (dis_bottom + dis1 + dis2)*0.5
+					surface = (s*(s-dis_bottom)*(s-dis1)*(s-dis2))^0.5
+					wally[i,j,k] = surface/dis_bottom * 2
 				end
+			end
+		end
 
-				dis1 = distance_list[point1, 2]
-				dis2 = distance_list[point2, 2]
-				
-				# ヘロンの公式から距離を算出
-				# 正確な平面への投影はしてないので、注意
-				s = (dis_bottom + dis1 + dis2)*0.5
-				surface = (s*(s-dis_bottom)*(s-dis1)*(s-dis2))^0.5
-				wally[i,j,k] = surface/dis_bottom * 2
+		# 仮想セルへの代入
+		for k in 1+icell:cellzmax-icell
+			for j in 1:icell
+				for i in 1+icell:cellxmax-icell
+					wally[i,j,k] = wally[i,icell+1,k]
+					wally[i,cellymax-j+1,k] = wally[i,cellymax-icell,k]
+				end
 			end
 		end
-	end
+		for k in 1+icell:cellzmax-icell
+			for j in 1+icell:cellymax-icell
+				for i in 1:icell
+					wally[i,j,k] = wally[icell+1,j,k]
+					wally[cellxmax-i+1,j,k] = wally[cellxmax-icell,j,k]
+				end
+			end
+		end
+		for k in 1:icell
+			for j in 1+icell:cellymax-icell
+				for i in 1+icell:cellxmax-icell
+					wally[i,j,k] = wally[i,j,icell+1]
+					wally[i,j,cellzmax-k+1] = wally[i,j,cellzmax-icell]
+				end
+			end
+		end
 
-	# 仮想セルへの代入
-	for k in 1+icell:cellzmax-icell
-		for j in 1:icell
-			for i in 1+icell:cellxmax-icell
-				wally[i,j,k] = wally[i,icell+1,k]
-				wally[i,cellymax-j+1,k] = wally[i,cellymax-icell,k]
-			end
-		end
-	end
-	for k in 1+icell:cellzmax-icell
-		for j in 1+icell:cellymax-icell
-			for i in 1:icell
-				wally[i,j,k] = wally[icell+1,j,k]
-				wally[cellxmax-i+1,j,k] = wally[cellxmax-icell,j,k]
-			end
-		end
-	end
-	for k in 1:icell
-		for j in 1+icell:cellymax-icell
-			for i in 1+icell:cellxmax-icell
-				wally[i,j,k] = wally[i,j,icell+1]
-				wally[i,j,cellzmax-k+1] = wally[i,j,cellzmax-icell]
-			end
-		end
 	end
 
 	return wally, swith_wall

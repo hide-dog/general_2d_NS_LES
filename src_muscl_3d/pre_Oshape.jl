@@ -2,8 +2,8 @@ using Printf
 
 function main()
 
-    infile = "xy_hayabusa"
-    znum = 5
+    infile = "xy_box"
+    znum = 51
     dz = 2.0e-2
 
     xnum, ynum, x, y = read_wing(infile)

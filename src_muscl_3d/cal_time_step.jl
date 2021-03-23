@@ -27,7 +27,7 @@ function one_wave(A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, C_adv_hat_
     for k in 2:cellzmax
         for j in 2:cellymax
             for i in 2:cellxmax
-                for nn in 1:2   #A, B, C
+                for nn in 1:3   #A, B, C
                     jacob_temp = zeros(nval, nval)
                     if nn == 1
                         kx_av = 0.5*(vecAx[i,j,k,1]+vecAx[i+1,j,k,1]) / volume[i,j,k]
@@ -120,7 +120,6 @@ function one_wave(A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, C_adv_hat_
                         end
                         C_beta_shig[i,j,k] = beta * shigma
                     end
-
                 end
             end
         end

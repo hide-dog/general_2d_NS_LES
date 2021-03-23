@@ -29,11 +29,11 @@ function setup_init_value(Qbase, cellxmax, cellymax, cellzmax, init_rho, init_u,
     for k in 1:cellzmax
         for j in 1:cellymax
             for i in 1:cellxmax
-                Qbase[i,j,1] = init_rho
-                Qbase[i,j,2] = init_u
-                Qbase[i,j,3] = init_v
-                Qbase[i,j,4] = init_w
-                Qbase[i,j,5] = init_p
+                Qbase[i,j,k,1] = init_rho
+                Qbase[i,j,k,2] = init_u
+                Qbase[i,j,k,3] = init_v
+                Qbase[i,j,k,4] = init_w
+                Qbase[i,j,k,5] = init_p
             end
         end
     end

@@ -80,7 +80,7 @@ function one_wave(A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, C_adv_hat_
                     jacob_temp[4,2] = kx_av*w - kz_av*(g-1)*u
                     jacob_temp[4,3] = ky_av*w - kz_av*(g-1)*v
                     jacob_temp[4,4] = Z - kz_av*(g-2)*w
-                    jacob_temp[4,5] = (g-1)*ky_av
+                    jacob_temp[4,5] = (g-1)*kz_av
                 
                     jacob_temp[5,1] = Z*(-gebyrho + 2*b1c2)
                     jacob_temp[5,2] = kx_av*(gebyrho-b1c2) - (g-1)*u*Z
@@ -176,7 +176,7 @@ end
 # ------------------------------------
 function lusgs(D, Lx, Ly, Lz, Ux, Uy, Uz, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qconn_hat, delta_Q,
                 A_adv_hat_p, A_adv_hat_m, B_adv_hat_p, B_adv_hat_m, C_adv_hat_p, C_adv_hat_m, A_beta_shig, B_beta_shig, C_beta_shig,
-                jalphaP, jbetaP, jgammaP, RHS, cellxmax, cellymax, volume, nval, icell)
+                jalphaP, jbetaP, jgammaP, RHS, cellxmax, cellymax, cellzmax, volume, nval, icell)
        
     # calculate L and U
     for m in 1:nval
@@ -217,8 +217,9 @@ function lusgs(D, Lx, Ly, Lz, Ux, Uy, Uz, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_
     for k in 1+icell:cellzmax-icell
         for j in 1+icell:cellymax-icell
             for i in 1+icell:cellxmax-icell
-                D[i,j,k] = dt/dtau[i,j,k] + 1.0 
-                         + dt*(A_beta_shig[i,j,k]+2*jalphaP[i,j,k] + B_beta_shig[i,j,k]+2*jbetaP[i,j,k] + C_beta_shig[i,j,k]+2*jgammaP[i,j,k])
+                D[i,j,k] = dt/dtau[i,j,k] + 1.0 + dt*(A_beta_shig[i,j,k] + 2*jalphaP[i,j,k] +
+                                                      B_beta_shig[i,j,k] + 2*jbetaP[i,j,k] +
+                                                      C_beta_shig[i,j,k] + 2*jgammaP[i,j,k])
             end
         end
     end

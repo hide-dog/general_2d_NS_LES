@@ -4,7 +4,7 @@ function main()
 
     infile = "xy_hayabusa"
     znum = 5
-    dz = 1e-3
+    dz = 2.0e-2
 
     xnum, ynum, x, y = read_wing(infile)
 
@@ -76,8 +76,8 @@ function mk_gird(xnum, ynum, znum, x, y, dz, outdir)
     
     for j in 1+icell:ynum_max-icell
         for i in 1+icell:xnum_max-icell
-            nodes[i,j,1] = x[i-icell,j-icell]
-            nodes[i,j,2] = y[i-icell,j-icell]
+            nodes[i,j,1,1] = x[i-icell,j-icell]
+            nodes[i,j,1,2] = y[i-icell,j-icell]
         end
     end
 
@@ -89,49 +89,64 @@ function mk_gird(xnum, ynum, znum, x, y, dz, outdir)
     =#
     n = 1.0
     for j in 1:ynum_max
-        for k in 1:2
-            nodes[2,j,k]        =  (1.0+n)*nodes[3,j,k] - n*nodes[4,j,k]
-            nodes[1,j,k]        =  (1.0+n)*nodes[2,j,k] - n*nodes[3,j,k]
-            nodes[xnum_max-1,j,k] =  (1.0+n)*nodes[xnum_max-2,j,k] - n*nodes[xnum_max-3,j,k]
-            nodes[xnum_max,j,k] =  (1.0+n)*nodes[xnum_max-1,j,k] - n*nodes[xnum_max-2,j,k]
+        for l in 1:2
+            nodes[2,j,1,l]        =  (1.0+n)*nodes[3,j,1,l] - n*nodes[4,j,1,l]
+            nodes[1,j,1,l]        =  (1.0+n)*nodes[2,j,1,l] - n*nodes[3,j,1,l]
+            nodes[xnum_max-1,j,1,l] =  (1.0+n)*nodes[xnum_max-2,j,1,l] - n*nodes[xnum_max-3,j,1,l]
+            nodes[xnum_max,j,1,l] =  (1.0+n)*nodes[xnum_max-1,j,1,l] - n*nodes[xnum_max-2,j,1,l]
         end
     end
     for i in 1:xnum_max
-        for k in 1:2
-            nodes[i,2,k]        =  (1.0+n)*nodes[i,3,k] - n*nodes[i,4,k]
-            nodes[i,1,k]        =  (1.0+n)*nodes[i,2,k] - n*nodes[i,3,k]
-            nodes[i,ynum_max-1,k] =  (1.0+n)*nodes[i,ynum_max-2,k] - n*nodes[i,ynum_max-3,k]
-            nodes[i,ynum_max,k] =  (1.0+n)*nodes[i,ynum_max-1,k] - n*nodes[i,ynum_max-2,k]
+        for l in 1:2
+            nodes[i,2,1,l]        =  (1.0+n)*nodes[i,3,1,l] - n*nodes[i,4,1,l]
+            nodes[i,1,1,l]        =  (1.0+n)*nodes[i,2,1,l] - n*nodes[i,3,1,l]
+            nodes[i,ynum_max-1,1,l] =  (1.0+n)*nodes[i,ynum_max-2,1,l] - n*nodes[i,ynum_max-3,1,l]
+            nodes[i,ynum_max,1,l] =  (1.0+n)*nodes[i,ynum_max-1,1,l] - n*nodes[i,ynum_max-2,1,l]
         end
     end
 
-    fff=outdir*"/nodes"
+    for k in 1:znum_max
+        for j in 1:ynum_max
+            for i in 1:xnum_max
+                nodes[i,j,k,1] = nodes[i,j,1,1]
+                nodes[i,j,k,2] = nodes[i,j,1,2]
+                nodes[i,j,k,3] = dz*(k-1)
+            end
+        end
+    end
+
+    fff = outdir*"/nodes"
     open(fff,"w") do f
-        write(f,"nodes: xnum, ynum , x, y\n")
+        write(f,"nodes: xnum, ynum, znum, x, y, z\n")
         for i in 1:xnum_max
             for j in 1:ynum_max
-                x = @sprintf("%8.8e", nodes[i,j,1])
-                y = @sprintf("%8.8e", nodes[i,j,2])
-                write(f,string(i)*" "*string(j)*" "*x*" "*y*"\n")
+                for k in 1:znum_max
+                    x = @sprintf("%8.8e", nodes[i,j,k,1])
+                    y = @sprintf("%8.8e", nodes[i,j,k,2])
+                    z = @sprintf("%8.8e", nodes[i,j,k,3])
+                    write(f,string(i)*" "*string(j)*" "*string(k)*" "*x*" "*y*" "*z*"\n")
+                end
             end
         end
     end
     println("write "*fff)
 
     # nodes_forvtk
-    nodes_num = zeros(Int,xnum_max, ynum_max)
+    nodes_num = zeros(Int, xnum_max, ynum_max, znum_max)
     fff=outdir*"/nodes_forvtk"
     open(fff,"w") do f
-        write(f,"nodes: xnum, ynum , x, y\n")
-        k=1
+        write(f,"nodes: xnum, ynum, znum, x, y, z\n")
+        ite=1
         for i in 1+icell:xnum_max-icell
             for j in 1+icell:ynum_max-icell
-                x = @sprintf("%8.8e", nodes[i,j,1])
-                y = @sprintf("%8.8e", nodes[i,j,2])
-                z = @sprintf("%8.8e", nodes[i,j,3])
+                for k in 1+icell:znum_max-icell
+                x = @sprintf("%8.8e", nodes[i,j,k,1])
+                y = @sprintf("%8.8e", nodes[i,j,k,2])
+                z = @sprintf("%8.8e", nodes[i,j,k,3])
                 write(f,string(k)*" "*x*" "*y*" "*z*"\n")
-                nodes_num[i,j] = k
-                k = k+1
+                nodes_num[i,j,k] = ite
+                ite = ite+1
+                end
             end
         end
     end
@@ -139,76 +154,135 @@ function mk_gird(xnum, ynum, znum, x, y, dz, outdir)
 
     fff=outdir*"/nodesnum"
     open(fff,"w") do f
-        write(f,"nodesnum: xnum_max, ynum_max\n")
-        write(f,string(xnum_max)*" "*string(ynum_max)*"\n")
+        write(f,"nodesnum: xnum_max, ynum_max, znum_max\n")
+        write(f,string(xnum_max) * " "*string(ynum_max) * " "*string(znum_max)*"\n")
     end
 
     ### element ###
     fff=outdir*"/element_forvtk"
     open(fff,"w") do f
-        write(f,"elements:cell_xnum, lup,rup,ldown,rdown \n")
+        write(f,"elements:cell_xnum, lup,rup,ldown,rdown, lup,rup,ldown,rdown \n")
         k=1
         for i in 1+icell:xnum_max-icell-1
             for j in 1+icell:ynum_max-icell-1
-                d1 = @sprintf("%1.0f", nodes_num[i,j])
-                d2 = @sprintf("%1.0f", nodes_num[i,j+1])
-                d3 = @sprintf("%1.0f", nodes_num[i+1,j+1])
-                d4 = @sprintf("%1.0f", nodes_num[i+1,j])
-                write(f,string(k)*" "*d1*" "*d2*" "*d3*" "*d4*"\n")
-                k = k+1
+                for k in 1+icell:znum_max-icell-1
+                    d1 = @sprintf("%1.0f", nodes_num[  i,  j,  k])
+                    d2 = @sprintf("%1.0f", nodes_num[  i,j+1,  k])
+                    d3 = @sprintf("%1.0f", nodes_num[i+1,j+1,  k])
+                    d4 = @sprintf("%1.0f", nodes_num[i+1,  j,  k])
+                    d5 = @sprintf("%1.0f", nodes_num[  i,  j,k+1])
+                    d6 = @sprintf("%1.0f", nodes_num[  i,j+1,k+1])
+                    d7 = @sprintf("%1.0f", nodes_num[i+1,j+1,k+1])
+                    d8 = @sprintf("%1.0f", nodes_num[i+1,  j,k+1])
+                    write(f, string(k)*" "*d1*" "*d2*" "*d3*" "*d4)
+                    write(f, " "*d5*" "*d6*" "*d7*" "*d8*"\n")
+                    k = k+1
+                end
             end
         end
     end
     println("write "*fff)
 
-    return  nodes,xnum_max,ynum_max
+    return  nodes, xnum_max, ynum_max, znum_max
 end
 
-function vecA(nodes,xnum_max,ynum_max,outdir)
+function vecA(nodes,xnum_max,ynum_max,znum_max,outdir)
 
-    vecAx=zeros(xnum_max, ynum_max-1, 2)
-    for i in 1:xnum_max
+    vecAx = zeros(xnum_max, ynum_max-1, znum_max-1, 3)
+    for k in 1:znum_max-1
         for j in 1:ynum_max-1
-            # 2dim Ax=(y1-y3,x1-x3,0)
-            x = nodes[i,j+1,2]-nodes[i,j,2]
-            y = nodes[i,j,1]-nodes[i,j+1,1]
-            vecAx[i,j,1] = x
-            vecAx[i,j,2] = y
+            for i in 1:xnum_max
+                # 3dim Ax=(, , 0)
+                a1 = nodes[  i,j+1,k+1,1] - nodes[  i,  j,  k,1]
+                a2 = nodes[  i,j+1,k+1,2] - nodes[  i,  j,  k,2]
+                a3 = nodes[  i,j+1,k+1,3] - nodes[  i,  j,  k,3]
+                b1 = nodes[  i,  j,k+1,1] - nodes[  i,j+1,  k,1]
+                b2 = nodes[  i,  j,k+1,2] - nodes[  i,j+1,  k,2]
+                b3 = nodes[  i,  j,k+1,3] - nodes[  i,j+1,  k,3]
+                vecAx[i,j,k,1] = 0.5*(a2*b3 - a3*b2)
+                vecAx[i,j,k,2] = 0.5*(a3*b1 - a1*b3)
+                vecAx[i,j,k,3] = 0.5*(a1*b2 - a2*b1)
+            end
         end
     end
 
-    vecAy=zeros(xnum_max-1, ynum_max, 2)
-    for i in 1:xnum_max-1
+    vecAy = zeros(xnum_max-1, ynum_max, znum_max-1, 3)
+    for k in 1:znum_max-1
         for j in 1:ynum_max
-            # 2dim Ay=(y1-y2,x1-x2,0)
-            x = nodes[i,j,2]-nodes[i+1,j,2]
-            y = nodes[i+1,j,1]-nodes[i,j,1]
-            vecAy[i,j,1] = x
-            vecAy[i,j,2] = y
+            for i in 1:xnum_max-1
+                a1 = nodes[i+1,  j,k+1,1] - nodes[  i,  j,  k,1]
+                a2 = nodes[i+1,  j,k+1,2] - nodes[  i,  j,  k,2]
+                a3 = nodes[i+1,  j,k+1,3] - nodes[  i,  j,  k,3]
+                b1 = nodes[i+1,  j,  k,1] - nodes[  i,  j,k+1,1]
+                b2 = nodes[i+1,  j,  k,2] - nodes[  i,  j,k+1,2]
+                b3 = nodes[i+1,  j,  k,3] - nodes[  i,  j,k+1,3]
+                vecAy[i,j,k,1] = 0.5*(a2*b3 - a3*b2)
+                vecAy[i,j,k,2] = 0.5*(a3*b1 - a1*b3)
+                vecAy[i,j,k,3] = 0.5*(a1*b2 - a2*b1)
+            end
         end
     end
 
-    fff=outdir*"/vecAx"
+    vecAz = zeros(xnum_max-1, ynum_max-1, znum_max, 3)
+    for k in 1:znum_max
+        for j in 1:ynum_max-1
+            for i in 1:xnum_max-1
+                a1 = nodes[i+1,j+1,  k,1] - nodes[  i,  j,  k,1]
+                a2 = nodes[i+1,j+1,  k,2] - nodes[  i,  j,  k,2]
+                a3 = nodes[i+1,j+1,  k,3] - nodes[  i,  j,  k,3]
+                b1 = nodes[  i,j+1,  k,1] - nodes[i+1,  j,  k,1]
+                b2 = nodes[  i,j+1,  k,2] - nodes[i+1,  j,  k,2]
+                b3 = nodes[  i,j+1,  k,3] - nodes[i+1,  j,  k,3]
+                vecAz[i,j,k,1] = 0.5*(a2*b3 - a3*b2)
+                vecAz[i,j,k,2] = 0.5*(a3*b1 - a1*b3)
+                vecAz[i,j,k,3] = 0.5*(a1*b2 - a2*b1)
+            end
+        end
+    end
+
+    fff = outdir*"/vecAx"
     open(fff,"w") do f
-        write(f,"vecAx: xnum, ynum , x vec, y vec\n")
+        write(f,"vecAx: xnum, ynum, znum, x vec, y vec, z vec\n")
         for i in 1:xnum_max
             for j in 1:ynum_max-1
-                x = @sprintf("%8.8f", vecAx[i,j,1])
-                y = @sprintf("%8.8f", vecAx[i,j,2])
-                write(f,string(i)*" "*string(j)*" "*x*" "*y*"\n")
+                for k in 1:znum_max-1
+                    x = @sprintf("%8.8f", vecAx[i,j,k,1])
+                    y = @sprintf("%8.8f", vecAx[i,j,k,2])
+                    z = @sprintf("%8.8f", vecAx[i,j,k,3])
+                    write(f, string(i)*" "*string(j)*" "*string(k)*" "*x*" "*y*" "*z*"\n")
+                end
             end
         end
     end
     println("write "*fff)
 
-    fff=outdir*"/vecAy"
+    fff = outdir*"/vecAy"
     open(fff,"w") do f
-        write(f,"vecAy: xnum, ynum , x vec, y vec\n")
+        write(f,"vecAy: xnum, ynum, znum, x vec, y vec, z vec\n")
         for i in 1:xnum_max-1
             for j in 1:ynum_max
-                x = @sprintf("%8.8f", vecAy[i,j,1])
-                y = @sprintf("%8.8f", vecAy[i,j,2])
-                write(f,string(i)*" "*string(j)*" "*x*" "*y*"\n")
+                for k in 1:znum_max-1
+                    x = @sprintf("%8.8f", vecAy[i,j,k,1])
+                    y = @sprintf("%8.8f", vecAy[i,j,k,2])
+                    z = @sprintf("%8.8f", vecAy[i,j,k,3])
+                    write(f, string(i)*" "*string(j)*" "*string(k)*" "*x*" "*y*" "*z*"\n")
+                end
+            end
+        end
+    end
+    println("write "*fff)
+
+    fff = outdir*"/vecAz"
+    open(fff,"w") do f
+        write(f,"vecAz: xnum, ynum, znum, x vec, y vec, z vec\n")
+        for i in 1:xnum_max-1
+            for j in 1:ynum_max-1
+                for k in 1:znum_max
+                    x = @sprintf("%8.8f", vecAz[i,j,k,1])
+                    y = @sprintf("%8.8f", vecAz[i,j,k,2])
+                    z = @sprintf("%8.8f", vecAz[i,j,k,3])
+                    write(f, string(i)*" "*string(j)*" "*string(k)*" "*x*" "*y*" "*z*"\n")
+                end
             end
         end
     end

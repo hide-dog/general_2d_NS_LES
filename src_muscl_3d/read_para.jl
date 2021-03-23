@@ -63,6 +63,7 @@ function read_para(dict)
     init_rho = parse(Float64,dict["init_rho"])
     init_u   = parse(Float64,dict["init_u"])
     init_v   = parse(Float64,dict["init_v"])
+    init_w   = parse(Float64,dict["init_w"])
     init_p   = parse(Float64,dict["init_p"])
     init_T   = parse(Float64,dict["init_T"])
 
@@ -85,7 +86,7 @@ function read_para(dict)
     while true
         try
             bd=[parse(Int,dict["bd"*string(k)*"_con"]),   parse(Float64,dict["bd"*string(k)*"_rho"]),
-                parse(Float64,dict["bd"*string(k)*"_u"]), parse(Float64,dict["bd"*string(k)*"_v"]),
+                parse(Float64,dict["bd"*string(k)*"_u"]), parse(Float64,dict["bd"*string(k)*"_v"]), parse(Float64,dict["bd"*string(k)*"_w"]),
                 parse(Float64,dict["bd"*string(k)*"_p"]), parse(Float64,dict["bd"*string(k)*"_T"])]
             push!(bdcon,bd)
         catch
@@ -96,7 +97,7 @@ function read_para(dict)
     
     return out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
             time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
-            init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon
+            init_rho, init_u, init_v, init_w, init_p, init_T, specific_heat_ratio, Rd, bdcon
 end
 
 function input_para(PARAMDAT)
@@ -104,10 +105,10 @@ function input_para(PARAMDAT)
     dict          = read_json(read_PARAMDAT)
     out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
     time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
-    init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon = read_para(dict)
+    init_rho, init_u, init_v, init_w, init_p, init_T, specific_heat_ratio, Rd, bdcon = read_para(dict)
     println("fin reading para")
 
     return out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
             time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
-            init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon
+            init_rho, init_u, init_v, init_w, init_p, init_T, specific_heat_ratio, Rd, bdcon
 end

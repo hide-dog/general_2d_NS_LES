@@ -24,6 +24,8 @@ function main()
     # number of cells
     cellxmax = xmax - 1
     cellymax = ymax - 1
+    println(cellxmax)
+    println(cellymax)
     
     # allocation
     Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, mut, mut_bd, lambda, 
@@ -139,7 +141,8 @@ function main()
             if round(evalnum) % every_outnum == 0
                 println("\n")
                 println("nt_______________________________"*string(round(evalnum)))
-                output_result(evalnum, Qbase, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+                #output_result(evalnum, Qbase, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+                output_result_yplus(evalnum, Qbase, yplus, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
                 output_ave(Qbase_ave, cellxmax, cellymax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite, icell)
             end
             
@@ -334,7 +337,9 @@ function main()
             if round(evalnum) % every_outnum == 0
                 println("\n")
                 println("nt_______________________________"*string(round(evalnum)))
-                output_result(evalnum, Qbase, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+                # output_result(evalnum, Qbase, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+                output_result_yplus(evalnum, Qbase, yplus, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+
                 output_ave(Qbase_ave, cellxmax, cellymax, out_file_front, out_ext, out_dir, Rd, nval, loop_ite, icell)
             end
 

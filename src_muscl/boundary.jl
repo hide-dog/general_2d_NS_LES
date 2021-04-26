@@ -352,7 +352,7 @@ function set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, g, nva
 
     if Int(bdcon[4][1]) != 4
         for l in 1:nval
-            for i in 1:cellymax
+            for i in 1:cellxmax
                 for j in 1:icell-1
                     jj = cellymax - (icell-1)+j
                     Qbase[i,jj,l] = Qbase[i,jj-1,l]

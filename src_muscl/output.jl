@@ -32,7 +32,7 @@ end
 # ------------------------------------
 # output results ( + yplus) 
 # ------------------------------------
-function output_result1(stepnum, Qbase, yplus, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+function output_result_yplus(stepnum, Qbase, yplus, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
     
     stepnum = string(stepnum)
     while length(stepnum) < 6

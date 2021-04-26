@@ -177,9 +177,8 @@ function set_mu(mu, Qbase, cellxmax, cellymax, specific_heat_ratio, Rd)
     mu0 = 1.82e-5     # Reference Viscosity, Pa s
     T0  = 293.15      # Reference Temperature, K
     C   = 117         # Sutherland's constant, K
-    
-    for j in 1:cellymax
-        for i in 1:cellxmax
+    for i in 1:cellxmax
+        for j in 1:cellymax
             # T = p/(rho Rd )
             T = Qbase[i,j,4]/(Qbase[i,j,1]*Rd)
             mu[i,j] = mu0 * (T/T0)^1.5 * (T0+C)/(T+C)

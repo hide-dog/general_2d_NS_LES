@@ -9,6 +9,13 @@ function setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_v
                              (E_adv_hat[  i,  j, l] - E_vis_hat[  i,  j, l]) -
                              (F_adv_hat[  i,j+1, l] - F_vis_hat[  i,j+1, l]) +
                              (F_adv_hat[  i,  j, l] - F_vis_hat[  i,  j, l])
+                #=
+                if i==3 && j ==3
+                    println(" rhs ")
+                    println((E_adv_hat[i+1,  j,  l] - E_vis_hat[i+1,  j,  l]) + (E_adv_hat[  i,  j,  l] - E_vis_hat[  i,  j,  l]))
+                    println((F_adv_hat[  i,j+1,  l] - F_vis_hat[  i,j+1,  l]) + (F_adv_hat[  i,  j,  l] - F_vis_hat[  i,  j,  l]))
+                end
+                =#
             end
         end
     end

@@ -53,9 +53,9 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
             
             yplus_av = 0.5 *(yplus[i-1,j] + yplus[i,j])
             
-            if swith_wall[1] == 1 && i == 2
+            if swith_wall[1] == 1 && i == 1+icell
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-            elseif swith_wall[2] == 1 && i == cellxmax
+            elseif swith_wall[2] == 1 && i == cellxmax - icell+1
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             else
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] =
@@ -79,6 +79,7 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
                 end
                 =#
             end
+            tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             #=
             if i == 20 && j == 20
                 println("(20,20,du)")
@@ -161,19 +162,28 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
             
             yplus_av = 0.5 *(yplus[i,j-1] + yplus[i,j])
 
-            if swith_wall[3] == 1 && j == 2
+            if swith_wall[3] == 1 && j == 1+icell
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-            elseif swith_wall[4] == 1 && j == cellymax
+            elseif swith_wall[4] == 1 && j == cellymax-icell+1
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             else
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,i,j)
                 #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             end
-            
+            tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+
             F_vis_hat[i,j,1] = 0.0
             F_vis_hat[i,j,2] = ((vecAy[i,j,1]*sigma_xx + vecAy[i,j,2]*sigma_xy) - (vecAy[i,j,1]*tau_xx + vecAy[i,j,2]*tau_xy)) / volume_av
             F_vis_hat[i,j,3] = ((vecAy[i,j,1]*sigma_xy + vecAy[i,j,2]*sigma_yy) - (vecAy[i,j,1]*tau_xy + vecAy[i,j,2]*tau_yy)) / volume_av
             F_vis_hat[i,j,4] = ((vecAy[i,j,1]*betax + vecAy[i,j,2]*betay) - (vecAy[i,j,1]*e_sgs_x + vecAy[i,j,2]*e_sgs_y))  / volume_av
+
+            #=
+            if i==3 && j ==3
+                println(" F_vis ")
+                println(dudx)
+                println(mut_bd[i,j,2])
+            end
+            =#
         end
     end
 
@@ -254,11 +264,11 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     e_sgs_y = -rho_av * nu_sgs / Pr_sgs * dTdy + tau_xy*u_av + tau_yy*v_av
 
     # 
-    tau_xx = tau_xx / volume_av   *1.0e0
-    tau_xy = tau_xy / volume_av   *1.0e0
-    tau_yy = tau_yy / volume_av   *1.0e0
-    e_sgs_x = e_sgs_x / volume_av *1.0e0
-    e_sgs_y = e_sgs_y / volume_av *1.0e0
+    tau_xx = tau_xx / volume_av   
+    tau_xy = tau_xy / volume_av   
+    tau_yy = tau_yy / volume_av   
+    e_sgs_x = e_sgs_x / volume_av 
+    e_sgs_y = e_sgs_y / volume_av 
     
     #=
     if i == 51 && j ==3

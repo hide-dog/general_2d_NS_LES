@@ -3,7 +3,7 @@
 # ------------------------------------
 function setup_RHS(RHS, cellxmax, cellymax, cellzmax, E_adv_hat, F_adv_hat, G_adv_hat, 
                     E_vis_hat, F_vis_hat, G_vis_hat, nval, volume, icell)
-    Threads.@threads for l in 1:nval
+    for l in 1:nval
         for k in 1+icell:cellzmax-icell
             for j in 1+icell:cellymax-icell
                 for i in 1+icell:cellxmax-icell
@@ -13,6 +13,15 @@ function setup_RHS(RHS, cellxmax, cellymax, cellzmax, E_adv_hat, F_adv_hat, G_ad
                                      (F_adv_hat[  i,  j,  k, l] - F_vis_hat[  i,  j,  k, l]) -
                                      (G_adv_hat[  i,  j,k+1, l] - G_vis_hat[  i,  j,k+1, l]) +
                                      (G_adv_hat[  i,  j,  k, l] - G_vis_hat[  i,  j,  k, l])
+                    #=
+                    if i==3 && j ==3 && k==3
+                        println(" rhs ")
+                        println(G_adv_hat[  i,  j,k+1, l])
+                        println(G_vis_hat[  i,  j,k+1, l])
+                        println(G_adv_hat[  i,  j,  k, l])
+                        println(G_vis_hat[  i,  j,  k, l])
+                    end
+                    =#
                 end
             end
         end

@@ -128,7 +128,7 @@ function central_diff_jacobian(jalphaP, jbetaP, Qbase, Qcon, cellxmax, cellymax,
 
             eta_x_av = 0.5*(vecAy[i,j,1] + vecAy[i,j+1,1]) / volume[i,j]
             eta_y_av = 0.5*(vecAy[i,j,2] + vecAy[i,j+1,2]) / volume[i,j]
-            beta = (xi_x_av^2+xi_y_av^2)^0.5
+            beta = (eta_x_av^2+eta_y_av^2)^0.5
             jbetaP[i,j] = beta / volume[i,j] * (2*mu[i,j]/rho)
         end
     end
@@ -200,7 +200,6 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
             end
         end
     end
-
     # reset
     for l in 1:nval
         for j in 1+icell:cellymax-icell

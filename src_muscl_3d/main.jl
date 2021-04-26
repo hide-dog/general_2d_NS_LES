@@ -44,8 +44,6 @@ function main()
     cellcenter = set_cellcenter(cellcenter, nodes, cellxmax, cellymax, cellzmax)
     reset_write(fwrite)
 
-    #println(volume[3,3,3])
-
     # wally
     wally, swith_wall = set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax, cellzmax, icell)
 
@@ -206,6 +204,23 @@ function main()
                                 E_vis_hat, F_vis_hat, G_vis_hat, nval, volume, icell)
 
                 #println(RHS[10,10,:,:])
+                
+                #println(E_adv_hat[3,3,:,:])
+                #println(F_adv_hat[3,3,:,:])
+                #println(QbaseD[3,3,:,:])
+                #println(QbaseU[3,3,:,:])
+                #println(G_adv_hat[3,3,:,:])
+                #println(QbaseB[3,3,:,:])
+                #println(QbaseF[5,5,5,4])
+                #throw(UndefVarError(:x))
+                
+                #println(E_vis_hat[3,3,:,:])
+                #println(F_vis_hat[3,3,:,:])
+                #println(G_vis_hat[3,3,:,:])
+                #println(RHS[50,3,:,:])
+                #throw(UndefVarError(:x))
+                
+                #throw(UndefVarError(:x))
             
                 
                 # 粘性の更新
@@ -220,15 +235,24 @@ function main()
                 # set inner time step by local time stepping
                 dtau   = set_lts(dtau, lambda_facex, lambda_facey, lambda_facez, Qbasem, cellxmax, cellymax, cellzmax, 
                                     mu, dx, dy, dz, vecAx, vecAy, vecAz, volume, specific_heat_ratio, cfl, icell)
+                #println(dtau[3,3,:])
                 
                 # lusgs_advection_term
                 A_adv_hat_p, A_adv_hat_m, B_adv_hat_p, B_adv_hat_m, C_adv_hat_p, C_adv_hat_m, 
                 A_beta_shig, B_beta_shig, C_beta_shig = one_wave(A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, C_adv_hat_m, C_adv_hat_p,
-                                                                A_beta_shig, B_beta_shig, C_beta_shig, I, Qbase, Qcon, cellxmax, cellymax, cellzmax,
+                                                                A_beta_shig, B_beta_shig, C_beta_shig, I, Qbasem, Qcon, cellxmax, cellymax, cellzmax,
                                                                 vecAx, vecAy, vecAz, specific_heat_ratio, volume, nval)
                 # lusgs_viscos_term
-                jalphaP, jbetaP, jgammaP = central_diff_jacobian(jalphaP, jbetaP, jgammaP, Qbase, Qcon, cellxmax, cellymax, cellzmax, mu, lambda,
+                jalphaP, jbetaP, jgammaP = central_diff_jacobian(jalphaP, jbetaP, jgammaP, Qbasem, Qcon, cellxmax, cellymax, cellzmax, mu, lambda,
                                                         vecAx, vecAy, vecAz, specific_heat_ratio, volume, nval)
+                                                        
+
+                #println(A_adv_hat_m[5,5,5,:,:])
+                #println(jalphaP[5,5,5])
+
+                
+                
+
 
                 #println(RHS[:,:,6,:])
                 #println(A_adv_hat_m[10,10,10,:,:])
@@ -240,6 +264,7 @@ function main()
                 println(F_adv_hat[10,10,10,:])
                 println(G_adv_hat[10,10,10,:])
                 =#
+                #throw(UndefVarError(:x))
 
                 #=
 
@@ -280,7 +305,10 @@ function main()
                     A_adv_hat_p, A_adv_hat_m, B_adv_hat_p, B_adv_hat_m, C_adv_hat_p, C_adv_hat_m, A_beta_shig, B_beta_shig, C_beta_shig,
                     jalphaP, jbetaP, jgammaP, RHS, cellxmax, cellymax, cellzmax, volume, nval, icell)
 
-                    #println(delta_Q[:,:,:,:])
+                    #println(delta_Q[5,5,5,:])
+                    #println(delta_Q[3,3,3,:])
+                    #println(dtau[3,3,3])
+                    #throw(UndefVarError(:x))
                     
                     # cal Residuals by norm-2
                     res   = set_res(res, delta_Q, delta_Q_temp, cellxmax, cellymax, cellzmax, nval, icell)
@@ -312,7 +340,7 @@ function main()
                     for k in 1+icell:cellzmax-icell
                         for j in 1+icell:cellymax-icell
                             for i in 1+icell:cellxmax-icell
-                                Qcon_hat[i,j,k,l] = Qcon_hat[i,j,k,l] + delta_Q[i,j,k,l]
+                                Qcon_hat[i,j,k,l] = Qcon_hat[i,j,k,l] + delta_Q[i,j,k,l]*2
                             end
                         end
                     end
@@ -324,8 +352,8 @@ function main()
                 Qbasem = conservative_to_base(Qbasem, Qcon, cellxmax, cellymax, cellzmax, specific_heat_ratio)
 
                 
-                # println(delta_Q[4,4,:,4])
-                #println(Qbasem[4,4,:,4])
+                #println(delta_Q[30,4,:,:])
+                #throw(UndefVarError(:x))
 
                 
                 # Find out if the results were divergent
@@ -357,6 +385,12 @@ function main()
 
             # Find out if the results were divergent
             check_divrege(Qbase, cellxmax, cellymax, cellzmax, Rd, fwrite, icell)
+
+            if t == 10
+                println(delta_Q[30,4,:,:])
+                println(Qbase[30,4,:,:])
+                #throw(UndefVarError(:x))
+            end
         end
     end
     

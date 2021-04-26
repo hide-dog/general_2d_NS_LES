@@ -159,26 +159,16 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                     end
                 end
                 #=
-                if i==10 && j ==10 && k==5
+                if i==3 && j ==3 && k==3
                     println(" F ")
                     println(mdot)
+                    println(ph)
                     println(rhoD)
                     println(VD)
                     println(pD)
                     println(rhoU)
                     println(VU)
                     println(pU)
-                end
-                =#
-                #=
-                if isequal(vA[3], NaN) == true
-                    println("  ")
-                    println(i)
-                    println(j)
-                    println(k)
-                    println(tvA)
-                    println(vecAy[i,j,k,:])
-                    println(vecAy[i,j+1,k,:])
                 end
                 =#
             end
@@ -200,7 +190,7 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 vA[3] = tvA[3] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
                 rhoB = QbaseB[i,j,k,1]
-                UB = QbaseB[i,j,k,2]*vA[1] + QbaseB[i,j,k,3]*vA[2] + QbaseB[i,j,k,4]*vA[3]
+                WB = QbaseB[i,j,k,2]*vA[1] + QbaseB[i,j,k,3]*vA[2] + QbaseB[i,j,k,4]*vA[3]
                 pB = QbaseB[i,j,k,5]
                 
                 # k cell
@@ -213,18 +203,18 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                 vA[3] = tvA[3] / (tvA[1]^2 + tvA[2]^2 + tvA[3]^2)^0.5
                 
                 rhoF = QbaseF[i,j,k,1]
-                UF = QbaseF[i,j,k,2]*vA[1] + QbaseF[i,j,k,3]*vA[2] + QbaseF[i,j,k,4]*vA[3]
+                WF = QbaseF[i,j,k,2]*vA[1] + QbaseF[i,j,k,3]*vA[2] + QbaseF[i,j,k,4]*vA[3]
                 pF = QbaseF[i,j,k,5]              
                 
                 # scheme
                 if  ad_scheme == 1
-                    mdot, ph = AUSM_plus_half(rhoB, rhoF, UB, UF, pB, pF, g, i, j)
+                    mdot, ph = AUSM_plus_half(rhoB, rhoF, WB, WF, pB, pF, g, i, j)
                 elseif ad_scheme == 2
-                    mdot, ph = AUSM_plusup_half(rhoB, rhoF, UB, UF, pB, pF, Minf, g, i, j)
+                    mdot, ph = AUSM_plusup_half(rhoB, rhoF, WB, WF, pB, pF, Minf, g, i, j)
                 elseif ad_scheme == 4
                     velocity = (0.5 * (QbaseF[i,j,k,2]^2 + QbaseF[i,j,k,3]^2 + QbaseF[i,j,k,4]^2 
                                         + QbaseB[i,j,k,2]^2 + QbaseB[i,j,k,3]^2 + QbaseB[i,j,k,4]^2))^0.5
-                    mdot, ph = SLAU_half(rhoB, rhoF, UB, UF, pB, pF, velocity, g)
+                    mdot, ph = SLAU_half(rhoB, rhoF, WB, WF, pB, pF, velocity, g)
                 end
                 
                 # flux half
@@ -250,9 +240,16 @@ function AUSM(E_adv_hat, F_adv_hat, G_adv_hat, QbaseF, QbaseB, QbaseU, QbaseD, Q
                     end
                 end
                 #=
-                if i==10 && j ==10 && k==5
-                    println("  ")
+                if i==3 && j ==3 && k==3
+                    println(" G ")
                     println(mdot)
+                    println(ph)
+                    println(rhoB)
+                    println(WB)
+                    println(pB)
+                    println(rhoF)
+                    println(WF)
+                    println(pF)
                 end
                 =#
             end

@@ -91,7 +91,7 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                 if swith_wall[1] == 1 && i == 1+icell
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
                     e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                elseif swith_wall[2] == 1 && i == cellxmax - icell
+                elseif swith_wall[2] == 1 && i == cellxmax - icell+1
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
                     e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 else
@@ -119,6 +119,8 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                     end
                     =#
                 end
+                tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 #=
                 if i == 20 && j == 20
                     println("(20,20,du)")
@@ -190,7 +192,6 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                 dwdeta = QbaseU[i,j,k,4] - QbaseD[i,j,k,4]
                 dTdeta = (QbaseU[i,j,k,5]/(QbaseU[i,j,k,1]*Rd) - QbaseD[i,j,k,5]/(QbaseD[i,j,k,1]*Rd))
 
-                
                 dudzeta = 0.25 * (QbaseF[i,  j,k+1,2] - QbaseB[i,  j,k+1,2] + QbaseF[i,  j,k,2] - QbaseB[i,  j,k,2]
                                 + QbaseF[i,j-1,k+1,2] - QbaseB[i,j-1,k+1,2] + QbaseF[i,j-1,k,2] - QbaseB[i,j-1,k,2])
                 dvdzeta = 0.25 * (QbaseF[i,  j,k+1,3] - QbaseB[i,  j,k+1,3] + QbaseF[i,  j,k,3] - QbaseB[i,  j,k,3]
@@ -245,7 +246,7 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                 if swith_wall[3] == 1 && j == 1+icell
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
                     e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                elseif swith_wall[3] == 1 && j == cellymax - icell
+                elseif swith_wall[4] == 1 && j == cellymax - icell+1
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
                     e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 else
@@ -254,6 +255,8 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                     Smagorinsky_model(dudx, dudy, dudz, dvdx, dvdy, dvdz, dwdx, dwdy, dwdz, dTdx, dTdy, dTdz,
                                     rho_av, u_av, v_av, w_av, volume_av, yplus_av, i, j)
                 end
+                tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
                 F_vis_hat[i,j,k,1] = 0.0
                 F_vis_hat[i,j,k,2] = ((vecAy[i,j,k,1]*sigma_xx + vecAy[i,j,k,2]*sigma_xy + vecAy[i,j,k,3]*sigma_xz) -
@@ -264,6 +267,13 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                                       (vecAy[i,j,k,1]*tau_xz   + vecAy[i,j,k,2]*tau_yz   + vecAy[i,j,k,3]*tau_zz)) / volume_av
                 F_vis_hat[i,j,k,5] = ((vecAy[i,j,k,1]*betax    + vecAy[i,j,k,2]*betay    + vecAy[i,j,k,3]*betaz) -
                                       (vecAy[i,j,k,1]*e_sgs_x  + vecAy[i,j,k,2]*e_sgs_y  + vecAy[i,j,k,3]*e_sgs_z))/ volume_av
+                #=
+                if i==3 && j ==3 && k ==3
+                    println(" F_vis ")
+                    println(dudx)
+                    println(mut_bd[i,j,k,2])
+                end
+                =#
             end
         end
     end
@@ -354,7 +364,7 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                 if swith_wall[5] == 1 && i == 1+icell
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
                     e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,3] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                elseif swith_wall[6] == 1 && i == cellzmax - icell
+                elseif swith_wall[6] == 1 && i == cellzmax - icell+1
                     tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
                     e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,3] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 else
@@ -363,6 +373,8 @@ function central_diff(E_vis_hat, F_vis_hat, G_vis_hat, QbaseU, QbaseD, QbaseL, Q
                     Smagorinsky_model(dudx, dudy, dudz, dvdx, dvdy, dvdz, dwdx, dwdy, dwdz, dTdx, dTdy, dTdz,
                                     rho_av, u_av, v_av, w_av, volume_av, yplus_av, i, j)
                 end
+                tau_xx, tau_xy, tau_xz, tau_yy, tau_yz, tau_zz, 
+                    e_sgs_x, e_sgs_y, e_sgs_z, mut_bd[i,j,k,3] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                 
                 G_vis_hat[i,j,k,1] = 0.0
                 G_vis_hat[i,j,k,2] = ((vecAz[i,j,k,1]*sigma_xx + vecAz[i,j,k,2]*sigma_xy + vecAz[i,j,k,3]*sigma_xz) -
@@ -473,15 +485,15 @@ function Smagorinsky_model(dudx, dudy, dudz, dvdx, dvdy, dvdz, dwdx, dwdy, dwdz,
     e_sgs_z = -rho_av * nu_sgs / Pr_sgs * dTdz + tau_xz*u_av + tau_yz*v_av + tau_zz*w_av
 
     # 
-    tau_xx = tau_xx / volume_av   *1.0e0
-    tau_xy = tau_xy / volume_av   *1.0e0
-    tau_xz = tau_xz / volume_av   *1.0e0
-    tau_yy = tau_yy / volume_av   *1.0e0
-    tau_yz = tau_yz / volume_av   *1.0e0
-    tau_zz = tau_zz / volume_av   *1.0e0
-    e_sgs_x = e_sgs_x / volume_av *1.0e0
-    e_sgs_y = e_sgs_y / volume_av *1.0e0
-    e_sgs_z = e_sgs_z / volume_av *1.0e0
+    tau_xx = tau_xx / volume_av   
+    tau_xy = tau_xy / volume_av   
+    tau_xz = tau_xz / volume_av   
+    tau_yy = tau_yy / volume_av   
+    tau_yz = tau_yz / volume_av   
+    tau_zz = tau_zz / volume_av   
+    e_sgs_x = e_sgs_x / volume_av 
+    e_sgs_y = e_sgs_y / volume_av 
+    e_sgs_z = e_sgs_z / volume_av 
     
     #=
     if i == 51 && j ==3

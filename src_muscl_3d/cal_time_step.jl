@@ -138,7 +138,7 @@ end
 # ------------------------------------
 function central_diff_jacobian(jalphaP, jbetaP, jgammaP, Qbase, Qcon, cellxmax, cellymax, cellzmax, mu, lambda,
                             vecAx, vecAy, vecAz, specific_heat_ratio, volume, nval)
-    
+                            
     for k in 1:cellzmax
         for j in 1:cellymax
             for i in 1:cellxmax
@@ -167,6 +167,7 @@ function central_diff_jacobian(jalphaP, jbetaP, jgammaP, Qbase, Qcon, cellxmax, 
             end
         end
     end
+
     return jalphaP, jbetaP, jgammaP
 end
 
@@ -255,7 +256,6 @@ function lusgs(D, Lx, Ly, Lz, Ux, Uy, Uz, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_
             end
         end
     end
-
     # reset
     for l in 1:nval
         for k in 1+icell:cellzmax-icell

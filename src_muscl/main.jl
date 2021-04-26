@@ -212,6 +212,16 @@ function main()
                 
                 # RHS
                 RHS = setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume, icell)
+                
+                #println(E_adv_hat[3,3,:])
+                #println(F_adv_hat[3,3,:])
+                #println(E_vis_hat[3,3,:])
+                #println(F_vis_hat[3,3,:])
+                #println(RHS[50,3,:])
+                #throw(UndefVarError(:x))
+                
+                #throw(UndefVarError(:x))
+
 
                 #println(E_adv_hat[150,150,:])
                 #println(E_adv_hat[20,20,:])
@@ -235,14 +245,16 @@ function main()
                 # lusgs_advection_term
                 A_adv_hat_p, A_adv_hat_m, B_adv_hat_p, B_adv_hat_m, 
                 A_beta_shig, B_beta_shig = one_wave(A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, A_beta_shig, B_beta_shig, I,
-                                                    Qbase, Qcon, cellxmax, cellymax, vecAx, vecAy, specific_heat_ratio, volume, nval)
+                                                    Qbasem, Qcon, cellxmax, cellymax, vecAx, vecAy, specific_heat_ratio, volume, nval)
                 # lusgs_viscos_term
-                jalphaP, jbetaP = central_diff_jacobian(jalphaP, jbetaP, Qbase, Qcon, cellxmax, cellymax, mu, lambda,
+                jalphaP, jbetaP = central_diff_jacobian(jalphaP, jbetaP, Qbasem, Qcon, cellxmax, cellymax, mu, lambda,
                                                         vecAx, vecAy, specific_heat_ratio, volume, nval)
 
                 #println(RHS[2,:,1])
-                #println(A_adv_hat_m[2,:,1])
-                #println(jalphaP[2,:])
+                #println(A_adv_hat_m[5,5,:,:])
+                #println(jalphaP[5,5])
+
+                #throw(UndefVarError(:x))
                 
                 # LUSGS
                 ite = 0
@@ -260,6 +272,10 @@ function main()
                     delta_Q = lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qconn_hat, delta_Q,
                                     A_adv_hat_p,  A_adv_hat_m,  B_adv_hat_p,  B_adv_hat_m,  A_beta_shig,  B_beta_shig,
                                      jalphaP,  jbetaP, RHS, cellxmax, cellymax, volume, nval, icell)
+                    #println(delta_Q[5,5,:])
+                    #println(delta_Q[3,3,:])
+                    #println(dtau[3,3])
+                    #throw(UndefVarError(:x))
                     
                     # cal Residuals by norm-2
                     res   = set_res(res, delta_Q, delta_Q_temp, cellxmax, cellymax, nval, icell)
@@ -324,6 +340,12 @@ function main()
 
             # Find out if the results were divergent
             check_divrege(Qbase, cellxmax, cellymax, Rd, fwrite, icell)
+
+            if t == 10
+                println(delta_Q[30,4,:])
+                println(Qbase[30,4,:])
+                #throw(UndefVarError(:x))
+            end
         end
     end
     

@@ -84,7 +84,7 @@ function set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax, icell)
 			dis_bottom = ((wallpoint[point1, 1] - wallpoint[point2, 1])^2 + (wallpoint[point1, 2] - wallpoint[point2, 2])^2)^0.5
 			
 			# O型格子の関係で同じ点が二つあるため
-			if dis_bottom == 0.0
+			if dis_bottom <= 1.0e-10
 				point1 = Int(qdistance_list[1,1])
 				point2 = Int(qdistance_list[3,1])
 			
@@ -96,6 +96,12 @@ function set_wally(nodes, bdcon, wally, cellcenter, cellxmax, cellymax, icell)
 			
 			# ヘロンの公式から距離を算出
 			s = (dis_bottom + dis1 + dis2)*0.5
+
+			if s*(s-dis_bottom)*(s-dis1)*(s-dis2) < 0.0
+				println(dis_bottom)
+				println(dis2)
+				println(dis1)
+			end
 			surface = (s*(s-dis_bottom)*(s-dis1)*(s-dis2))^0.5
 			wally[i,j] = surface/dis_bottom * 2
 		end
@@ -169,10 +175,6 @@ function cal_yplus(yplus, Qbase, wally, swith_wall, mu, cellxmax, cellymax, vecA
 				nu = mu[i,j] / Qbase[i,j,1]
 				ubar = abs(Axx*Qbase[i,j,2] + Axy*Qbase[i,j,3])
 				yplus[i,j], up = cal_wall_val_spalding(ubar, wally[i,j], nu)
-
-				if yplus[i,j] > 500
-					break
-				end
 			end
 		end
 	end

@@ -308,11 +308,12 @@ end
 # ------------------------------------
 # cal average convective value
 # ------------------------------------
-function cal_Qave(Qbase, Qbase_ave, cellxmax, cellymax, nval)
+function cal_Qave(Qbase_ave, Qbase, cellxmax, cellymax, nval, stepnum)
     for l in 1:nval
         for j in 1:cellymax
             for i in 1:cellxmax
-                Qbase_ave[i,j,l] += Qbase[i,j,l]
+                temp = (Qbase_ave[i,j,l]*(stepnum-1) + Qbase[i,j,l]) / stepnum
+                Qbase_ave[i,j,l] = temp
             end
         end
     end

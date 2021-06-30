@@ -3,7 +3,7 @@
 # ------------------------------------
 function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR, 
                     QconU, QconD, QconL, QconR, cellxmax, cellymax, mu, mut, mut_bd, lambda,
-                    vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall, icell)
+                    vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall, wally, icell)
     
     for j in 1+icell:cellymax -icell
         for i in 1+icell:cellxmax+1 -icell
@@ -59,7 +59,7 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             else
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] =
-                Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av, i, j)
+                Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av, wally, i, j)
                 
                 #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
@@ -79,7 +79,7 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
                 end
                 =#
             end
-            tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             #=
             if i == 20 && j == 20
                 println("(20,20,du)")
@@ -167,10 +167,10 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
             elseif swith_wall[4] == 1 && j == cellymax-icell+1
                 tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             else
-                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,i,j)
+                tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,wally, i,j)
                 #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,2] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             end
-            tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            #tau_xx, tau_xy, tau_yy, e_sgs_x, e_sgs_y, mut_bd[i,j,1] = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
             F_vis_hat[i,j,1] = 0.0
             F_vis_hat[i,j,2] = ((vecAy[i,j,1]*sigma_xx + vecAy[i,j,2]*sigma_xy) - (vecAy[i,j,1]*tau_xx + vecAy[i,j,2]*tau_xy)) / volume_av
@@ -209,11 +209,13 @@ function central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
     return E_vis_hat, F_vis_hat, mut
 end
 
-function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,i,j)
-    Cs = 0.18 
+function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_av, volume_av, yplus_av,wally, i,j)
+    Cs = 0.2
     Cl = 0.09
-    Pr_sgs = 0.6
+    Cp = 1.0e3
+    Pr_sgs = 0.9
     k = 0.41
+    Cw = 0.15
 
     S11 = dudx
     S12 = 0.5*(dudy + dvdx)
@@ -221,11 +223,12 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     S22 = dvdy
 
     absS = ( 2 * (S11^2 + S12^2 + S21^2 + S22^2) )^0.5
-    Delta = (volume_av) ^ (1/3) * wallf_Van_Driest(yplus_av)
+    Delta = (volume_av) ^ (1/3)
 
     #lsgs = 0.5*((Cs*Delta - k*y) - abs(Cs*Delta - k*y)) + k*y # min([ky, Cs*Delta])
     #nu_sgs = (lsgs)^2 * absS
-    nu_sgs = (Cs*Delta)^2 * absS
+    lsgs = min(k*wally[i,j], Cw*Delta)
+    nu_sgs = (lsgs)^2 * absS
     mu_sgs = nu_sgs * rho_av
     
     #=
@@ -260,8 +263,8 @@ function Smagorinsky_model(dudx, dvdy, dudy, dvdx, dTdx, dTdy, rho_av, u_av, v_a
     tau_yy = -2 * rho_av * nu_sgs * S22
 
     # SGS energy
-    e_sgs_x = -rho_av * nu_sgs / Pr_sgs * dTdx + tau_xx*u_av + tau_xy*v_av
-    e_sgs_y = -rho_av * nu_sgs / Pr_sgs * dTdy + tau_xy*u_av + tau_yy*v_av
+    e_sgs_x = -rho_av * Cp * nu_sgs / Pr_sgs * dTdx + tau_xx*u_av + tau_xy*v_av
+    e_sgs_y = -rho_av * Cp * nu_sgs / Pr_sgs * dTdy + tau_xy*u_av + tau_yy*v_av
 
     # 
     tau_xx = tau_xx / volume_av   

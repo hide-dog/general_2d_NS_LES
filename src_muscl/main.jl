@@ -24,8 +24,6 @@ function main()
     # number of cells
     cellxmax = xmax - 1
     cellymax = ymax - 1
-    println(cellxmax)
-    println(cellymax)
     
     # allocation
     Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, mut, mut_bd, lambda, 
@@ -35,7 +33,7 @@ function main()
     # set initial condition
     Qbase, restartnum = set_initQbase(Qbase, cellxmax, cellymax, restart_file, init_rho, init_u, init_v, init_p, init_T,
                                       specific_heat_ratio, out_file_front, out_ext, out_dir, restartnum, Rd, nval, icell)
-   
+    
     # set initial condition for imaginary cell
     Qbase    = set_boundary(Qbase, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, specific_heat_ratio, nval, icell)
 
@@ -60,6 +58,9 @@ function main()
 
     # check boundary condition
     check_bd(bdcon)
+
+    output_result_yplus(0, Qbase, wally, cellxmax, cellymax, specific_heat_ratio, out_file_front, out_ext, out_dir, Rd, nval, icell)
+   
         
     # main loop
     loop_ite = 0
@@ -158,6 +159,8 @@ function main()
         jalphaP, jbetaP, delta_Q, delta_Q_temp, D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, res,
         norm2, I = allocation_implicit(cellxmax, cellymax, nval)
 
+        norm_rho = 0.0
+
         prog = Progress(nt,1)
         @time for t in 1:nt
             next!(prog)
@@ -211,7 +214,7 @@ function main()
                 # viscos_term
                 E_vis_hat, F_vis_hat, mut = central_diff(E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR, 
                                         QconU, QconD, QconL, QconR, cellxmax, cellymax, mu, mut, mut_bd,lambda,
-                                        vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall, icell)
+                                        vecAx, vecAy, specific_heat_ratio, volume, Rd, nval, yplus, swith_wall, wally, icell)
                 
                 # RHS
                 RHS = setup_RHS(RHS, cellxmax, cellymax, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, nval, volume, icell)
@@ -288,7 +291,7 @@ function main()
                     if norm2[1] < norm_ok && norm2[2] < norm_ok && norm2[3] < norm_ok && norm2[4] < norm_ok
                         break
                     end
-                    if ite % 100 ==0
+                    if ite % 100 == 0
                         println(" now cal norm2 ")
                         println(norm2)
                         if isequal(norm2[1], NaN) == true
@@ -317,10 +320,16 @@ function main()
                 # calculate primitive variables
                 Qcon = Qhat_to_Q(Qcon, Qcon_hat, cellxmax, cellymax, volume, nval)
                 Qbasem = conservative_to_base(Qbasem, Qcon, cellxmax, cellymax, specific_heat_ratio)
-                Qbase_ave = cal_Qave(Qbasem, Qbase_ave, cellxmax, cellymax, nval)
 
                 # Find out if the results were divergent
                 check_divrege(Qbasem, cellxmax, cellymax, Rd, fwrite, icell)
+
+                # hantei inner ite 
+                if tau == 1
+                    norm_rho = norm2[1]
+                elseif abs(norm2[1]/norm_rho) < 1.0e-3
+                    break
+                end
             end
             # End of the inner iteration
 
@@ -332,6 +341,8 @@ function main()
                     end
                 end
             end
+
+            Qbase_ave = cal_Qave(Qbase_ave, Qbase, cellxmax, cellymax, nval, evalnum)
             
             # output
             if round(evalnum) % every_outnum == 0
@@ -345,12 +356,6 @@ function main()
 
             # Find out if the results were divergent
             check_divrege(Qbase, cellxmax, cellymax, Rd, fwrite, icell)
-
-            if t == 10
-                println(delta_Q[30,4,:])
-                println(Qbase[30,4,:])
-                #throw(UndefVarError(:x))
-            end
         end
     end
     

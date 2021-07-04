@@ -163,10 +163,88 @@ function set_lts(dtau, lambda_facex, lambda_facey, Qbase, cellxmax, cellymax, mu
             a4 = lambda_facey[  i,j+1]
             lmax = maximum([a1,a2,a3,a4])
 
-            dtau[i,j] = cfl * volume[i,j] / lmax
+            dtau[i,j] = cfl[i,j] * volume[i,j] / lmax
         end
     end
     return dtau
+end
+
+# ------------------------------------
+# set cfl initial
+# ------------------------------------
+function set_cfl_init(cfl, cellxmax, cellymax, cfl_max, cfl_min)
+    for i in 1:cellxmax
+        for j in 1:cellymax
+            cfl[i,j] = cfl_min
+        end
+    end
+    return cfl
+end
+
+# ------------------------------------
+# set cfl
+# ------------------------------------
+function set_cfl(cfl, delta_Q, Qcon_hat, norm2, norm2_old, cellxmax, cellymax, cfl_max, cfl_min, cfl_inc, cfl_dec, nval, icell)
+    ra = 0.2
+    omega_max = 1.0
+    omega_min = 0.1
+
+    # judge by residual 
+    r_res = 0.0
+    for l in 1:nval
+        temp = abs(norm2[l] - norm2_old[l]) / (norm2[l] + 1.0e-20)
+        r_res = max(r_res, temp)
+    end
+
+    if r_res < 1.0e-3
+        for j in 1+icell:cellymax-icell
+            for i in 1+icell:cellxmax-icell
+                cfl[i,j] = cfl_min
+            end
+        end
+    else
+
+        # judge by variables
+        r = 0.0
+        omega = 0.0
+        fa = 0.0
+        for j in 1+icell:cellymax-icell
+            for i in 1+icell:cellxmax-icell
+                # ratio of density and energy
+                r_density = abs(delta_Q[i,j,1]) / Qcon_hat[i,j,1]
+                r_energy  = abs(delta_Q[i,j,4]) / Qcon_hat[i,j,4]
+
+                r = min(r_density, r_energy)
+
+                #println(r)
+
+                if r > ra
+                    omega = min( ra/ r, omega_max)
+                else
+                    omega = omega_max
+                end
+                
+                # reverse ???
+                if omega < omega_min
+                    fa = cfl_inc
+                elseif omega < omega_max
+                    fa = 1.0
+                else
+                    fa = cfl_dec
+                end
+
+                cfl[i,j] = fa * cfl[i,j]
+
+                if cfl[i,j] > cfl_max
+                    cfl[i,j] = cfl_max
+                elseif cfl[i,j] < cfl_min
+                    cfl[i,j] = cfl_min
+                end
+            end
+        end
+    end
+
+    return cfl
 end
 
 # ------------------------------------

@@ -54,7 +54,10 @@ function read_para(dict)
     every_outnum = Int(parse(Float64,dict["every_outnum"]))
     in_nt        = Int(parse(Float64,dict["inner_step"]))
     dtau         = parse(Float64,dict["dtau"])
-    cfl          = parse(Float64,dict["CFL"])
+    cfl_max      = parse(Float64,dict["CFL_max"])
+    cfl_min      = parse(Float64,dict["CFL_min"])
+    cfl_inc      = parse(Float64,dict["CFL_inc"])
+    cfl_dec      = parse(Float64,dict["CFL_dec"])
 
     # scheme
     ad_scheme = Int(parse(Float64,dict["advection"]))
@@ -95,7 +98,7 @@ function read_para(dict)
     end
     
     return out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
-            time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
+            time_integ, nt, dt, every_outnum, in_nt, dtau, cfl_max, cfl_min, cfl_inc, cfl_dec, ad_scheme,
             init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon
 end
 
@@ -103,11 +106,11 @@ function input_para(PARAMDAT)
     read_PARAMDAT = make_json(PARAMDAT)
     dict          = read_json(read_PARAMDAT)
     out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
-    time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
+    time_integ, nt, dt, every_outnum, in_nt, dtau, cfl_max, cfl_min, cfl_inc, cfl_dec, ad_scheme,
     init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon = read_para(dict)
     println("fin reading para")
 
     return out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
-            time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
+            time_integ, nt, dt, every_outnum, in_nt, dtau, cfl_max, cfl_min, cfl_inc, cfl_dec, ad_scheme,
             init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon
 end

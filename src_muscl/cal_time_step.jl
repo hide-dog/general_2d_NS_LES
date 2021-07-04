@@ -200,6 +200,7 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
             end
         end
     end
+
     # reset
     for l in 1:nval
         for j in 1+icell:cellymax-icell
@@ -209,6 +210,47 @@ function lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qco
             end
         end
     end
+
+    """    
+    # residual
+    for j in 1+icell:cellymax-icell
+        for i in 1+icell:cellxmax-icell
+            for l in 1:nval
+                for m in 1:nval
+                    LdQ[i,j,l] += Lx[i-1,j,l,m]*delta_Q[i-1,j,m] + Ly[i,j-1,l,m]*delta_Q[i,j-1,m]
+                    UdQ[i,j,l] += Ux[i+1,j,l,m]*delta_Q[i+1,j,m] + Uy[i,j+1,l,m]*delta_Q[i,j+1,m]
+                end
+            end
+        end
+    end
+
+    # residual 
+    norm2 = zeros(nval)
+    tempAxb = zeros(nval)
+    tempb = zeros(nval)
+    for l in 1:nval
+        for j in 1+icell:cellymax-icell
+            for i in 1+icell:cellxmax-icell
+                res        = LdQ[i,j,l] + D[i,j]*delta_Q[i,j,l] + UdQ[i,j,l] - RHS_temp[i,j,l]
+                tempAxb[l] = tempAxb[l] + res^2
+                tempb[l]   = tempb[l]   + RHS_temp[i,j,l]^2
+            end
+        end
+    end
+    for l in 1:nval
+        norm2[l] = (tempAxb[l]/(tempb[l] + 1.0e-50)) ^ 0.5
+    end
+
+    # reset
+    for l in 1:nval
+        for j in 1+icell:cellymax-icell
+            for i in 1+icell:cellxmax-icell
+                LdQ[i,j,l] = 0.0
+                UdQ[i,j,l] = 0.0                
+            end
+        end
+    end
+    """
     
     return delta_Q
 end

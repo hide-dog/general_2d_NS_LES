@@ -20,17 +20,19 @@ function common_allocation(cellxmax, cellymax, nval)
     QbaseL = zeros(cellxmax, cellymax+1, nval)        # Q left
     QbaseR = zeros(cellxmax, cellymax+1, nval)        # Q right
 
-    QconU = zeros(cellxmax+1, cellymax, nval)        # Q up
-    QconD = zeros(cellxmax+1, cellymax, nval)        # Q down
-    QconL = zeros(cellxmax, cellymax+1, nval)        # Q left
-    QconR = zeros(cellxmax, cellymax+1, nval)        # Q right
+    QconU = zeros(cellxmax+1, cellymax, nval)         # Q up
+    QconD = zeros(cellxmax+1, cellymax, nval)         # Q down
+    QconL = zeros(cellxmax, cellymax+1, nval)         # Q left
+    QconR = zeros(cellxmax, cellymax+1, nval)         # Q right
 
     mu     = zeros(cellxmax, cellymax)                 # viscosity
-    lambda = zeros(cellxmax, cellymax)                 # thermal Conductivity
     mut    = zeros(cellxmax, cellymax)                 # turb viscosity
-    mut_bd = zeros(cellxmax+1, cellymax+1, 2)              # turb viscosity on bd
+    mut_bd = zeros(cellxmax+1, cellymax+1, 2)          # turb viscosity on bd
+    lambda = zeros(cellxmax, cellymax)                 # thermal Conductivity
 
     RHS = zeros(cellxmax, cellymax, nval)              # right hand side
+
+    cfl = zeros(cellxmax, cellymax)                    # cfl
     
     # define at cell boundaries
     dx = zeros(cellxmax+1, cellymax)                   # distance from cell center
@@ -43,9 +45,8 @@ function common_allocation(cellxmax, cellymax, nval)
     F_vis_hat = zeros(  cellxmax, cellymax+1, nval)    # flux of viscosity in the y-direction
 
     return Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, mut, mut_bd, lambda, 
-            E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, RHS, QbaseU, QbaseD, QbaseL, QbaseR,
-            QconU, QconD, QconL, QconR
-            
+            RHS, cfl, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
+            QconU, QconD, QconL, QconR            
 end 
 
 function allocation_implicit(cellxmax, cellymax, nval)
@@ -55,7 +56,7 @@ function allocation_implicit(cellxmax, cellymax, nval)
     Qconn_hat  = zeros(cellxmax, cellymax, nval)        # conserved variables in general coordinate system for inner iteration
     Qbasem     = zeros(cellxmax, cellymax, nval)        # primitive variables for inner iteration
 
-    dtau         = zeros(cellxmax, cellymax)            # computational time steps
+    dtau        = zeros(cellxmax, cellymax)            # computational time steps
 
     A_adv_hat_p = zeros(cellxmax, cellymax, nval, nval) # Jacobian matrix A+ for one-wave approximation
     A_adv_hat_m = zeros(cellxmax, cellymax, nval, nval) # Jacobian matrix A- for one-wave approximation
@@ -87,7 +88,8 @@ function allocation_implicit(cellxmax, cellymax, nval)
     lambda_facey = zeros(cellxmax, cellymax+1)          # lambda for computational time steps
 
     # misc
-    norm2 = zeros(nval)                                 # Residuals by norm-2
+    norm2     = zeros(nval)                                 # Residuals by norm-2
+    norm2_old = zeros(nval)                                 # Residuals by norm-2
     I = zeros(nval, nval)                               # identity matrix
     for l in 1:nval
         I[l,l] = 1.0
@@ -96,5 +98,5 @@ function allocation_implicit(cellxmax, cellymax, nval)
     return Qbasen, Qconn, Qconn_hat, Qbasem, dtau, lambda_facex, lambda_facey,
             A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, A_beta_shig, B_beta_shig,
             jalphaP, jbetaP, delta_Q, delta_Q_temp, D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, res,
-            norm2, I
+            norm2, norm2_old, I
 end

@@ -18,7 +18,7 @@ function main()
     # read grids and parameter
     xmax, ymax, nodes, vecAx, vecAy = read_allgrid()
     out_file_front, out_ext, restartnum, restart_file, init_small, norm_ok,
-    time_integ, nt, dt, every_outnum, in_nt, dtau, cfl, ad_scheme,
+    time_integ, nt, dt, every_outnum, in_nt, dtau, cfl_max, cfl_min, cfl_inc, cfl_dec, ad_scheme,
     init_rho, init_u, init_v, init_p, init_T, specific_heat_ratio, Rd, bdcon = input_para(PARAMDAT)
     
     # number of cells
@@ -27,7 +27,7 @@ function main()
     
     # allocation
     Qbase, Qbase_ave, volume, cellcenter, wally, yplus, dx, dy, Qcon, Qcon_hat, mu, mut, mut_bd, lambda, 
-    E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, RHS, QbaseU, QbaseD, QbaseL, QbaseR,
+    RHS, cfl, E_adv_hat, F_adv_hat, E_vis_hat, F_vis_hat, QbaseU, QbaseD, QbaseL, QbaseR,
     QconU, QconD, QconL, QconR = common_allocation(cellxmax, cellymax, nval)
     
     # set initial condition
@@ -157,7 +157,10 @@ function main()
         Qbasen, Qconn, Qconn_hat, Qbasem, dtau, lambda_facex, lambda_facey,
         A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, A_beta_shig, B_beta_shig,
         jalphaP, jbetaP, delta_Q, delta_Q_temp, D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, res,
-        norm2, I = allocation_implicit(cellxmax, cellymax, nval)
+        norm2, norm2_old, I = allocation_implicit(cellxmax, cellymax, nval)
+        
+        # set initial cfl
+        cfl = set_cfl_init(cfl, cellxmax, cellymax, cfl_max, cfl_min)
 
         norm_rho = 0.0
 
@@ -191,6 +194,16 @@ function main()
                 Qbasem   = set_boundary(Qbasem, cellxmax, cellymax, vecAx, vecAy, bdcon, Rd, specific_heat_ratio, nval, icell)
                 Qcon     = base_to_conservative(Qbasem, Qcon, cellxmax, cellymax, specific_heat_ratio)
                 Qcon_hat = setup_Qcon_hat(Qcon, Qcon_hat, cellxmax, cellymax, volume, nval)
+
+                # copy
+                for l in 1:nval
+                    for j in 1:cellymax
+                        for i in 1:cellxmax
+                            Qbasen[i,j,l] = Qbasem[i,j,l]
+                        end
+                    end
+                end
+
 
                 # muscl
                 QbaseU, QbaseD, QbaseL, QbaseR, 
@@ -244,10 +257,6 @@ function main()
                     end
                 end
 
-                # set inner time step by local time stepping
-                dtau   = set_lts(dtau, lambda_facex, lambda_facey, Qbasem, cellxmax, cellymax, mu, dx, dy,
-                                vecAx, vecAy, volume, specific_heat_ratio, cfl, icell)
-                
                 # lusgs_advection_term
                 A_adv_hat_p, A_adv_hat_m, B_adv_hat_p, B_adv_hat_m, 
                 A_beta_shig, B_beta_shig = one_wave(A_adv_hat_m, A_adv_hat_p, B_adv_hat_m, B_adv_hat_p, A_beta_shig, B_beta_shig, I,
@@ -264,6 +273,7 @@ function main()
                 
                 # LUSGS
                 ite = 0
+                norm2 .= 0.0       # norm2[:] = 0.0
                 while true
                     # copy delta_Q
                     for l in 1:nval
@@ -273,7 +283,11 @@ function main()
                             end
                         end
                     end
-                                        
+
+                    # set inner time step by local time stepping
+                    dtau   = set_lts(dtau, lambda_facex, lambda_facey, Qbasem, cellxmax, cellymax, mu, dx, dy,
+                    vecAx, vecAy, volume, specific_heat_ratio, cfl, icell)
+
                     # Reversing the left-hand side by lusgs
                     delta_Q = lusgs(D, Lx, Ly, Ux, Uy, LdQ, UdQ, RHS_temp, I, dt, dtau, Qcon_hat, Qconn_hat, delta_Q,
                                     A_adv_hat_p,  A_adv_hat_m,  B_adv_hat_p,  B_adv_hat_m,  A_beta_shig,  B_beta_shig,
@@ -285,7 +299,7 @@ function main()
                     
                     # cal Residuals by norm-2
                     res   = set_res(res, delta_Q, delta_Q_temp, cellxmax, cellymax, nval, icell)
-                    norm2 = check_converge(res, RHS, cellxmax, cellymax, init_small, nval, icell)
+                    norm2 = check_converge(res, delta_Q, cellxmax, cellymax, init_small, nval, icell)
                     
                     # Find out if the results converged
                     if norm2[1] < norm_ok && norm2[2] < norm_ok && norm2[3] < norm_ok && norm2[4] < norm_ok
@@ -302,12 +316,17 @@ function main()
                         end
                     end
 
+                    # set cfl
+                    cfl = set_cfl(cfl, delta_Q, Qcon_hat, norm2, norm2_old, cellxmax, cellymax, cfl_max, cfl_min, cfl_inc, cfl_dec, nval, icell)
+                    
+                    # update norm2
+                    for l in 1:nval
+                        norm2_old[l] = norm2[l]
+                    end
+
                     ite += 1
                 end
 
-                # output inner time
-                output_innertime(fwrite, tau, norm2, nval)
-                
                 # Updating
                 for l in 1:nval
                     for j in 2:cellymax-1
@@ -324,10 +343,15 @@ function main()
                 # Find out if the results were divergent
                 check_divrege(Qbasem, cellxmax, cellymax, Rd, fwrite, icell)
 
+                # cal Residuals by norm-2
+                res   = set_res(res, Qbasem, Qbasen, cellxmax, cellymax, nval, icell)
+                norm2 = check_converge(res, Qbasem, cellxmax, cellymax, init_small, nval, icell)
+                
+                # output inner time
+                output_innertime(fwrite, tau, norm2, nval)
+                
                 # hantei inner ite 
-                if tau == 1
-                    norm_rho = norm2[1]
-                elseif abs(norm2[1]/norm_rho) < 1.0e-3
+                if abs(norm2[1]) < 1.0e-3
                     break
                 end
             end

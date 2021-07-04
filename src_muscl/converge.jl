@@ -15,7 +15,7 @@ end
 # ------------------------------------
 # calculate Residuals by norm-2
 # ------------------------------------
-function check_converge(res, RHS, cellxmax, cellymax, init_small, nval, icell)
+function check_converge(res, delta_Q, cellxmax, cellymax, init_small, nval, icell)
     norm2 = zeros(nval)
 
     tempAxb = zeros(nval)
@@ -24,7 +24,7 @@ function check_converge(res, RHS, cellxmax, cellymax, init_small, nval, icell)
         for j in 1+icell:cellymax-icell
             for i in 1+icell:cellxmax-icell            
                 tempAxb[l] = tempAxb[l] + res[i,j,l]^2
-                tempb[l] = tempb[l] + RHS[i,j,l]^2
+                tempb[l] = tempb[l] + delta_Q[i,j,l]^2
             end
         end
     end
